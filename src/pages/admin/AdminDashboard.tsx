@@ -21,6 +21,13 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Settings,
+  Upload,
+  Image,
+  Type,
+  Globe,
+  Palette,
+  Save,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -82,6 +89,7 @@ const sidebarItems = [
   { id: "properties", label: "Bất động sản", icon: Home },
   { id: "destinations", label: "Điểm đến", icon: MapPin },
   { id: "blog", label: "Blog", icon: FileText },
+  { id: "settings", label: "Cài đặt", icon: Settings },
 ];
 
 const AdminDashboard = () => {
@@ -199,6 +207,7 @@ const AdminDashboard = () => {
           {activeTab === "properties" && <PropertiesSection properties={mockProperties} getStatusBadge={getStatusBadge} />}
           {activeTab === "destinations" && <DestinationsSection destinations={mockDestinations} getStatusBadge={getStatusBadge} />}
           {activeTab === "blog" && <BlogSection blogs={mockBlogs} getStatusBadge={getStatusBadge} />}
+          {activeTab === "settings" && <SettingsSection />}
         </div>
       </main>
     </div>
@@ -501,5 +510,208 @@ const BlogSection = ({ blogs, getStatusBadge }: { blogs: typeof mockBlogs; getSt
     </Card>
   </div>
 );
+
+// Settings Section
+const SettingsSection = () => {
+  const [siteName, setSiteName] = useState("Wanderlust");
+  const [siteDescription, setSiteDescription] = useState("Khám phá những điểm đến tuyệt vời");
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFaviconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFaviconPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Cài đặt trang web</h2>
+          <p className="text-muted-foreground text-sm">Tùy chỉnh thông tin và giao diện trang web</p>
+        </div>
+        <Button className="gap-2">
+          <Save className="h-4 w-4" />
+          Lưu thay đổi
+        </Button>
+      </div>
+
+      {/* Site Identity */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Globe className="h-5 w-5 text-primary" />
+            Thông tin trang web
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Type className="h-4 w-4" />
+              Tên trang web
+            </label>
+            <Input
+              value={siteName}
+              onChange={(e) => setSiteName(e.target.value)}
+              placeholder="Nhập tên trang web..."
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Mô tả trang web</label>
+            <Input
+              value={siteDescription}
+              onChange={(e) => setSiteDescription(e.target.value)}
+              placeholder="Mô tả ngắn gọn về trang web..."
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Logo Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Image className="h-5 w-5 text-primary" />
+            Logo
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-start gap-6">
+            <div className="w-32 h-32 border-2 border-dashed border-border rounded-xl flex items-center justify-center bg-muted/50 overflow-hidden">
+              {logoPreview ? (
+                <img src={logoPreview} alt="Logo preview" className="w-full h-full object-contain" />
+              ) : (
+                <div className="text-center">
+                  <Image className="h-8 w-8 mx-auto text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground mt-2">Logo hiện tại</p>
+                </div>
+              )}
+            </div>
+            <div className="flex-1 space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Tải lên logo mới cho trang web. Kích thước đề xuất: 200x200px. Định dạng: PNG, JPG, SVG.
+              </p>
+              <div className="flex gap-2">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoChange}
+                    className="hidden"
+                  />
+                  <Button variant="outline" className="gap-2" asChild>
+                    <span>
+                      <Upload className="h-4 w-4" />
+                      Tải lên logo
+                    </span>
+                  </Button>
+                </label>
+                {logoPreview && (
+                  <Button variant="ghost" onClick={() => setLogoPreview(null)}>
+                    Xóa
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Favicon Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Palette className="h-5 w-5 text-primary" />
+            Favicon
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-start gap-6">
+            <div className="w-20 h-20 border-2 border-dashed border-border rounded-xl flex items-center justify-center bg-muted/50 overflow-hidden">
+              {faviconPreview ? (
+                <img src={faviconPreview} alt="Favicon preview" className="w-full h-full object-contain" />
+              ) : (
+                <div className="text-center">
+                  <div className="w-8 h-8 mx-auto bg-primary rounded-lg flex items-center justify-center">
+                    <span className="text-primary-foreground font-bold text-sm">W</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex-1 space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Favicon hiển thị trên tab trình duyệt. Kích thước đề xuất: 32x32px hoặc 64x64px. Định dạng: ICO, PNG.
+              </p>
+              <div className="flex gap-2">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFaviconChange}
+                    className="hidden"
+                  />
+                  <Button variant="outline" className="gap-2" asChild>
+                    <span>
+                      <Upload className="h-4 w-4" />
+                      Tải lên favicon
+                    </span>
+                  </Button>
+                </label>
+                {faviconPreview && (
+                  <Button variant="ghost" onClick={() => setFaviconPreview(null)}>
+                    Xóa
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Theme Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Palette className="h-5 w-5 text-primary" />
+            Giao diện
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 border border-border rounded-xl cursor-pointer hover:border-primary transition-colors bg-card">
+              <div className="w-full h-16 bg-background rounded-lg mb-3 flex items-center justify-center">
+                <div className="w-8 h-8 bg-primary rounded-full" />
+              </div>
+              <p className="text-sm font-medium text-center">Chế độ sáng</p>
+            </div>
+            <div className="p-4 border border-border rounded-xl cursor-pointer hover:border-primary transition-colors bg-foreground/5">
+              <div className="w-full h-16 bg-foreground/10 rounded-lg mb-3 flex items-center justify-center">
+                <div className="w-8 h-8 bg-primary rounded-full" />
+              </div>
+              <p className="text-sm font-medium text-center">Chế độ tối</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 export default AdminDashboard;
