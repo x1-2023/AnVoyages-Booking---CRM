@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { motion, type Easing } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { 
   Plane, 
@@ -12,7 +12,8 @@ import {
   Cloud,
   Sun,
   Mountain,
-  TreePine
+  TreePine,
+  Bird
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,18 +22,52 @@ const NotFound = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Mouse parallax
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  
+  // Smooth spring animation for mouse movement
+  const springConfig = { damping: 25, stiffness: 150 };
+  const smoothMouseX = useSpring(mouseX, springConfig);
+  const smoothMouseY = useSpring(mouseY, springConfig);
+
+  // Transform mouse position to different parallax layers
+  const sunX = useTransform(smoothMouseX, (v) => v * 0.5);
+  const sunY = useTransform(smoothMouseY, (v) => v * 0.3);
+  const cloudsX = useTransform(smoothMouseX, (v) => v * 0.8);
+  const cloudsY = useTransform(smoothMouseY, (v) => v * 0.4);
+  const mountainsX = useTransform(smoothMouseX, (v) => v * 0.2);
+  const treesX = useTransform(smoothMouseX, (v) => v * 0.6);
+  const treesY = useTransform(smoothMouseY, (v) => v * 0.3);
+  const contentX = useTransform(smoothMouseX, (v) => v * -0.1);
+  const contentY = useTransform(smoothMouseY, (v) => v * -0.1);
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
   }, [location.pathname]);
 
+  // Handle mouse movement for parallax
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    const { innerWidth, innerHeight } = window;
+    const x = (clientX / innerWidth - 0.5) * 2;
+    const y = (clientY / innerHeight - 0.5) * 2;
+    mouseX.set(x * 40);
+    mouseY.set(y * 30);
+  };
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-sky-100 via-sky-50 to-emerald-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-950">
+    <div 
+      className="relative min-h-screen overflow-hidden bg-gradient-to-b from-sky-100 via-sky-50 to-emerald-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-950"
+      onMouseMove={handleMouseMove}
+    >
       {/* Animated Background Elements */}
       
-      {/* Sun */}
+      {/* Sun with parallax */}
       <motion.div
         className="absolute top-10 right-20 text-yellow-400"
+        style={{ x: sunX, y: sunY }}
         animate={{ 
           rotate: 360,
           scale: [1, 1.1, 1],
@@ -45,9 +80,34 @@ const NotFound = () => {
         <Sun className="w-20 h-20 drop-shadow-lg" strokeWidth={1.5} />
       </motion.div>
 
-      {/* Clouds */}
+      {/* Birds */}
+      <motion.div
+        className="absolute top-[15%] left-[20%] text-slate-600/40 dark:text-slate-400/20"
+        style={{ x: cloudsX, y: cloudsY }}
+        animate={{ 
+          x: [0, 100, 200, 300],
+          y: [0, -20, 10, -10]
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+      >
+        <Bird className="w-6 h-6" />
+      </motion.div>
+      <motion.div
+        className="absolute top-[18%] left-[22%] text-slate-600/30 dark:text-slate-400/15"
+        style={{ x: cloudsX, y: cloudsY }}
+        animate={{ 
+          x: [0, 100, 200, 300],
+          y: [0, 15, -10, 5]
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "linear", delay: 0.3 }}
+      >
+        <Bird className="w-4 h-4" />
+      </motion.div>
+
+      {/* Clouds with parallax */}
       <motion.div
         className="absolute top-20 text-white/80 dark:text-white/20"
+        style={{ y: cloudsY }}
         initial={{ x: "-100%" }}
         animate={{ x: "100vw" }}
         transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -57,6 +117,7 @@ const NotFound = () => {
       
       <motion.div
         className="absolute top-40 text-white/60 dark:text-white/15"
+        style={{ y: cloudsY }}
         initial={{ x: "-50%" }}
         animate={{ x: "100vw" }}
         transition={{ duration: 25, repeat: Infinity, ease: "linear", delay: 5 }}
@@ -66,6 +127,7 @@ const NotFound = () => {
 
       <motion.div
         className="absolute top-32 text-white/70 dark:text-white/10"
+        style={{ y: cloudsY }}
         initial={{ x: "0%" }}
         animate={{ x: "150vw" }}
         transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
@@ -73,7 +135,7 @@ const NotFound = () => {
         <Cloud className="w-20 h-20" fill="currentColor" />
       </motion.div>
 
-      {/* Flying Plane */}
+      {/* Flying Plane with parallax */}
       <motion.div
         className="absolute top-1/4 text-primary"
         initial={{ x: "-10%", y: "10%" }}
@@ -83,28 +145,38 @@ const NotFound = () => {
         <Plane className="w-12 h-12 rotate-[-30deg]" />
       </motion.div>
 
-      {/* Mountains Background */}
-      <div className="absolute bottom-0 left-0 right-0">
+      {/* Mountains Background with parallax */}
+      <motion.div 
+        className="absolute bottom-0 left-0 right-0"
+        style={{ x: mountainsX }}
+      >
         <svg viewBox="0 0 1440 320" className="w-full text-emerald-200/50 dark:text-emerald-900/30">
           <path fill="currentColor" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
         </svg>
-      </div>
+      </motion.div>
       
-      <div className="absolute bottom-0 left-0 right-0">
+      <motion.div 
+        className="absolute bottom-0 left-0 right-0"
+        style={{ x: useTransform(smoothMouseX, (v) => v * 0.3) }}
+      >
         <svg viewBox="0 0 1440 320" className="w-full text-emerald-300/60 dark:text-emerald-800/40">
           <path fill="currentColor" d="M0,288L48,272C96,256,192,224,288,213.3C384,203,480,213,576,229.3C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
         </svg>
-      </div>
+      </motion.div>
 
-      <div className="absolute bottom-0 left-0 right-0">
+      <motion.div 
+        className="absolute bottom-0 left-0 right-0"
+        style={{ x: useTransform(smoothMouseX, (v) => v * 0.4) }}
+      >
         <svg viewBox="0 0 1440 320" className="w-full text-emerald-400/80 dark:text-emerald-700/50">
           <path fill="currentColor" d="M0,256L48,261.3C96,267,192,277,288,272C384,267,480,245,576,240C672,235,768,245,864,250.7C960,256,1056,256,1152,245.3C1248,235,1344,213,1392,202.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
         </svg>
-      </div>
+      </motion.div>
 
-      {/* Trees */}
+      {/* Trees with parallax */}
       <motion.div 
         className="absolute bottom-20 left-[10%] text-emerald-600 dark:text-emerald-500"
+        style={{ x: treesX, y: treesY }}
         animate={{ y: [-5, 5, -5] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       >
@@ -112,6 +184,7 @@ const NotFound = () => {
       </motion.div>
       <motion.div 
         className="absolute bottom-24 left-[15%] text-emerald-700 dark:text-emerald-600"
+        style={{ x: useTransform(smoothMouseX, (v) => v * 0.7) }}
         animate={{ y: [-5, 5, -5] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
       >
@@ -119,6 +192,7 @@ const NotFound = () => {
       </motion.div>
       <motion.div 
         className="absolute bottom-16 right-[12%] text-emerald-600 dark:text-emerald-500"
+        style={{ x: useTransform(smoothMouseX, (v) => v * -0.5) }}
         animate={{ y: [-5, 5, -5] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
       >
@@ -126,14 +200,32 @@ const NotFound = () => {
       </motion.div>
       <motion.div 
         className="absolute bottom-20 right-[8%] text-emerald-700 dark:text-emerald-600"
+        style={{ x: useTransform(smoothMouseX, (v) => v * -0.6) }}
         animate={{ y: [-5, 5, -5] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
       >
         <TreePine className="w-10 h-10" />
       </motion.div>
 
-      {/* Main Content */}
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-4">
+      {/* More decorative trees */}
+      <motion.div 
+        className="absolute bottom-28 left-[25%] text-emerald-500/70 dark:text-emerald-400/50"
+        style={{ x: useTransform(smoothMouseX, (v) => v * 0.5) }}
+      >
+        <TreePine className="w-8 h-8" />
+      </motion.div>
+      <motion.div 
+        className="absolute bottom-24 right-[20%] text-emerald-600/60 dark:text-emerald-500/40"
+        style={{ x: useTransform(smoothMouseX, (v) => v * -0.4) }}
+      >
+        <TreePine className="w-10 h-10" />
+      </motion.div>
+
+      {/* Main Content with subtle parallax */}
+      <motion.div 
+        className="relative z-10 flex min-h-screen items-center justify-center px-4"
+        style={{ x: contentX, y: contentY }}
+      >
         <div className="text-center max-w-2xl mx-auto">
           {/* Animated 404 */}
           <motion.div
@@ -268,7 +360,7 @@ const NotFound = () => {
             </p>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
