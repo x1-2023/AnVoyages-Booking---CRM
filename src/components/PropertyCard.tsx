@@ -35,12 +35,10 @@ const PropertyCard = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className={`group relative bg-card rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ${
-        featured ? 'md:col-span-2 md:row-span-2' : ''
-      }`}
+      className="group relative bg-card rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
     >
       {/* Image */}
-      <div className={`relative overflow-hidden ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`}>
+      <div className="relative overflow-hidden aspect-[4/3]">
         <img
           src={image}
           alt={title}
@@ -63,9 +61,7 @@ const PropertyCard = ({
       {/* Content */}
       <div className="p-5">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className={`font-display font-semibold text-foreground line-clamp-1 ${
-            featured ? 'text-xl' : 'text-lg'
-          }`}>
+          <h3 className="font-display font-semibold text-foreground text-lg line-clamp-1">
             {title}
           </h3>
         </div>
