@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { Globe } from 'lucide-react';
 
 const languages = [
-  { code: 'en', label: 'US EN', flag: '🇺🇸' },
-  { code: 'vi', label: 'VN VI', flag: '🇻🇳' },
+  { code: 'en', label: 'US' },
+  { code: 'vi', label: 'VN' },
 ];
 
 const LanguageSwitcher = () => {
@@ -36,8 +36,8 @@ const LanguageSwitcher = () => {
               transition={{ type: 'spring', duration: 0.5 }}
             />
           )}
-          <span className="relative z-10 text-base">
-            {lang.flag}
+          <span className="relative z-10">
+            {lang.label}
           </span>
         </motion.button>
       ))}
