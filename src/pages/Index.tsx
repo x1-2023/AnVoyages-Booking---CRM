@@ -241,7 +241,7 @@ const Index = () => {
                 </div>
                 
                 {/* Adults */}
-                <div className="flex-1 min-w-0 space-y-2">
+                <div className="w-20 flex-shrink-0 space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
                     <Users className="w-4 h-4 flex-shrink-0" />
                     {t('hero.adults')}
@@ -256,7 +256,7 @@ const Index = () => {
                 </div>
                 
                 {/* Children */}
-                <div className="flex-1 min-w-0 space-y-2">
+                <div className="w-20 flex-shrink-0 space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
                     <Users className="w-4 h-4 flex-shrink-0" />
                     {t('hero.children')}
