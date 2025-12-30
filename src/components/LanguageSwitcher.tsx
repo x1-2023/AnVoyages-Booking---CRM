@@ -36,9 +36,8 @@ const LanguageSwitcher = () => {
               transition={{ type: 'spring', duration: 0.5 }}
             />
           )}
-          <span className="relative z-10 flex items-center gap-1">
-            <span>{lang.flag}</span>
-            <span>{lang.label}</span>
+          <span className="relative z-10 text-base">
+            {lang.flag}
           </span>
         </motion.button>
       ))}
