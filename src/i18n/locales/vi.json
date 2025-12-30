@@ -1,0 +1,114 @@
+{
+  "nav": {
+    "home": "Trang chủ",
+    "destinations": "Điểm đến",
+    "properties": "Chỗ ở",
+    "blog": "Blog",
+    "contact": "Liên hệ"
+  },
+  "hero": {
+    "title": "Khám Phá Kỳ Nghỉ Hoàn Hảo",
+    "subtitle": "Khám phá những điểm đến tuyệt vời và đặt phòng độc đáo cho những trải nghiệm khó quên",
+    "search_placeholder": "Bạn muốn đi đâu?",
+    "check_in": "Nhận phòng",
+    "check_out": "Trả phòng",
+    "guests": "Khách",
+    "search": "Tìm kiếm"
+  },
+  "destinations": {
+    "title": "Điểm Đến Phổ Biến",
+    "subtitle": "Khám phá các địa điểm được yêu thích bởi du khách toàn cầu",
+    "properties": "chỗ ở"
+  },
+  "properties": {
+    "title": "Chỗ Ở Nổi Bật",
+    "subtitle": "Những nơi lưu trú được chọn lọc cho kỳ nghỉ hoàn hảo của bạn",
+    "per_night": "/ đêm",
+    "view_details": "Xem Chi Tiết",
+    "book_now": "Đặt Ngay"
+  },
+  "features": {
+    "title": "Tại Sao Chọn Chúng Tôi",
+    "subtitle": "Trải nghiệm sự khác biệt với dịch vụ du lịch cao cấp",
+    "best_price": {
+      "title": "Đảm Bảo Giá Tốt Nhất",
+      "description": "Chúng tôi cam kết mức giá thấp nhất cho mọi đặt phòng"
+    },
+    "secure": {
+      "title": "Đặt Phòng An Toàn",
+      "description": "Thanh toán và dữ liệu của bạn luôn được bảo vệ"
+    },
+    "support": {
+      "title": "Hỗ Trợ 24/7",
+      "description": "Đội ngũ của chúng tôi luôn sẵn sàng hỗ trợ bạn"
+    },
+    "verified": {
+      "title": "Chỗ Ở Đã Xác Minh",
+      "description": "Tất cả danh sách đều được xác minh chất lượng"
+    }
+  },
+  "blog": {
+    "title": "Cảm Hứng Du Lịch",
+    "subtitle": "Mẹo, hướng dẫn và câu chuyện từ khắp nơi trên thế giới",
+    "read_more": "Đọc Thêm"
+  },
+  "footer": {
+    "description": "Đối tác tin cậy của bạn trong việc tìm kiếm chỗ ở hoàn hảo trên toàn thế giới. Đặt phòng tự tin và khám phá vui vẻ.",
+    "quick_links": "Liên Kết Nhanh",
+    "support": "Hỗ Trợ",
+    "help_center": "Trung Tâm Trợ Giúp",
+    "cancellation": "Chính Sách Hủy",
+    "faq": "Câu Hỏi Thường Gặp",
+    "terms": "Điều Khoản & Điều Kiện",
+    "contact": "Liên Hệ",
+    "newsletter": "Bản Tin",
+    "newsletter_text": "Đăng ký để nhận ưu đãi đặc biệt và mẹo du lịch",
+    "subscribe": "Đăng Ký",
+    "email_placeholder": "Nhập email của bạn",
+    "rights": "Bảo lưu mọi quyền."
+  },
+  "property": {
+    "gallery": "Thư Viện Ảnh",
+    "overview": "Tổng Quan",
+    "amenities": "Tiện Nghi",
+    "location": "Vị Trí",
+    "reviews": "Đánh Giá",
+    "similar": "Chỗ Ở Tương Tự",
+    "per_night": "mỗi đêm",
+    "rating": "đánh giá",
+    "guests": "khách",
+    "bedrooms": "phòng ngủ",
+    "bathrooms": "phòng tắm"
+  },
+  "booking": {
+    "title": "Đặt Phòng",
+    "full_name": "Họ và Tên",
+    "phone": "Số Điện Thoại",
+    "email": "Địa Chỉ Email",
+    "check_in": "Ngày Nhận Phòng",
+    "check_out": "Ngày Trả Phòng",
+    "guests": "Số Lượng Khách",
+    "notes": "Ghi Chú Thêm",
+    "notes_placeholder": "Yêu cầu đặc biệt hoặc yêu cầu khác...",
+    "submit": "Gửi Yêu Cầu Đặt Phòng",
+    "success": "Yêu cầu đặt phòng đã được gửi thành công!",
+    "total": "Tổng cộng"
+  },
+  "filter": {
+    "title": "Bộ Lọc",
+    "price_range": "Khoảng Giá",
+    "property_type": "Loại Chỗ Ở",
+    "amenities": "Tiện Nghi",
+    "rating": "Đánh Giá",
+    "apply": "Áp Dụng Bộ Lọc",
+    "clear": "Xóa Tất Cả"
+  },
+  "common": {
+    "loading": "Đang tải...",
+    "error": "Đã xảy ra lỗi",
+    "retry": "Thử Lại",
+    "back": "Quay Lại",
+    "next": "Tiếp Theo",
+    "previous": "Trước"
+  }
+}

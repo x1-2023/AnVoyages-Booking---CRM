@@ -1,0 +1,114 @@
+{
+  "nav": {
+    "home": "Home",
+    "destinations": "Destinations",
+    "properties": "Properties",
+    "blog": "Blog",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Discover Your Perfect Getaway",
+    "subtitle": "Explore stunning destinations and book unique accommodations for unforgettable experiences",
+    "search_placeholder": "Where do you want to go?",
+    "check_in": "Check-in",
+    "check_out": "Check-out",
+    "guests": "Guests",
+    "search": "Search"
+  },
+  "destinations": {
+    "title": "Popular Destinations",
+    "subtitle": "Explore trending locations loved by travelers worldwide",
+    "properties": "properties"
+  },
+  "properties": {
+    "title": "Featured Properties",
+    "subtitle": "Handpicked accommodations for your perfect stay",
+    "per_night": "/ night",
+    "view_details": "View Details",
+    "book_now": "Book Now"
+  },
+  "features": {
+    "title": "Why Choose Us",
+    "subtitle": "Experience the difference with our premium travel services",
+    "best_price": {
+      "title": "Best Price Guarantee",
+      "description": "We guarantee the lowest prices on all bookings"
+    },
+    "secure": {
+      "title": "Secure Booking",
+      "description": "Your payments and data are always protected"
+    },
+    "support": {
+      "title": "24/7 Support",
+      "description": "Our team is here to help you anytime"
+    },
+    "verified": {
+      "title": "Verified Properties",
+      "description": "All listings are verified for quality"
+    }
+  },
+  "blog": {
+    "title": "Travel Inspiration",
+    "subtitle": "Tips, guides, and stories from around the world",
+    "read_more": "Read More"
+  },
+  "footer": {
+    "description": "Your trusted partner for finding perfect accommodations worldwide. Book with confidence and explore with joy.",
+    "quick_links": "Quick Links",
+    "support": "Support",
+    "help_center": "Help Center",
+    "cancellation": "Cancellation Policy",
+    "faq": "FAQ",
+    "terms": "Terms & Conditions",
+    "contact": "Contact Us",
+    "newsletter": "Newsletter",
+    "newsletter_text": "Subscribe to get special offers and travel tips",
+    "subscribe": "Subscribe",
+    "email_placeholder": "Enter your email",
+    "rights": "All rights reserved."
+  },
+  "property": {
+    "gallery": "Gallery",
+    "overview": "Overview",
+    "amenities": "Amenities",
+    "location": "Location",
+    "reviews": "Reviews",
+    "similar": "Similar Properties",
+    "per_night": "per night",
+    "rating": "rating",
+    "guests": "guests",
+    "bedrooms": "bedrooms",
+    "bathrooms": "bathrooms"
+  },
+  "booking": {
+    "title": "Book Your Stay",
+    "full_name": "Full Name",
+    "phone": "Phone Number",
+    "email": "Email Address",
+    "check_in": "Check-in Date",
+    "check_out": "Check-out Date",
+    "guests": "Number of Guests",
+    "notes": "Additional Notes",
+    "notes_placeholder": "Any special requests or requirements...",
+    "submit": "Send Booking Request",
+    "success": "Booking request sent successfully!",
+    "total": "Total"
+  },
+  "filter": {
+    "title": "Filters",
+    "price_range": "Price Range",
+    "property_type": "Property Type",
+    "amenities": "Amenities",
+    "rating": "Rating",
+    "apply": "Apply Filters",
+    "clear": "Clear All"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  }
+}
