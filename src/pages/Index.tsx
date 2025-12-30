@@ -1,14 +1,17 @@
 import { useTranslation } from 'react-i18next';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
-import { useRef } from 'react';
-import { Search, Calendar, Users, MapPin, Shield, Headphones, BadgeCheck, Wallet } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Search, Calendar as CalendarIcon, Users, MapPin, Shield, Headphones, BadgeCheck, Wallet } from 'lucide-react';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PropertyCard from '@/components/PropertyCard';
 import DestinationCard from '@/components/DestinationCard';
-
 // Import images
 import heroBeach from '@/assets/hero-beach.jpg';
 import destinationSantorini from '@/assets/destination-santorini.jpg';
@@ -74,6 +77,8 @@ const properties = [
 const Index = () => {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [checkInDate, setCheckInDate] = useState<Date>();
+  const [checkOutDate, setCheckOutDate] = useState<Date>();
   
   // Scroll-based parallax
   const { scrollY } = useScroll();
@@ -225,23 +230,65 @@ const Index = () => {
                 {/* Check-in */}
                 <div className="flex-1 min-w-0 space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
-                    <Calendar className="w-4 h-4 flex-shrink-0" />
+                    <CalendarIcon className="w-4 h-4 flex-shrink-0" />
                     {t('hero.check_in')}
                   </label>
-                  <Input type="date" className="bg-background/50 border-border h-11" />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full h-11 justify-start text-left font-normal bg-background/50 border-border",
+                          !checkInDate && "text-muted-foreground"
+                        )}
+                      >
+                        {checkInDate ? format(checkInDate, "dd/MM/yyyy") : <span>Chọn ngày</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={checkInDate}
+                        onSelect={setCheckInDate}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 
                 {/* Check-out */}
                 <div className="flex-1 min-w-0 space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
-                    <Calendar className="w-4 h-4 flex-shrink-0" />
+                    <CalendarIcon className="w-4 h-4 flex-shrink-0" />
                     {t('hero.check_out')}
                   </label>
-                  <Input type="date" className="bg-background/50 border-border h-11" />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full h-11 justify-start text-left font-normal bg-background/50 border-border",
+                          !checkOutDate && "text-muted-foreground"
+                        )}
+                      >
+                        {checkOutDate ? format(checkOutDate, "dd/MM/yyyy") : <span>Chọn ngày</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={checkOutDate}
+                        onSelect={setCheckOutDate}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 
                 {/* Adults */}
-                <div className="w-20 flex-shrink-0 space-y-2">
+                <div className="w-16 flex-shrink-0 space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
                     <Users className="w-4 h-4 flex-shrink-0" />
                     {t('hero.adults')}
@@ -256,7 +303,7 @@ const Index = () => {
                 </div>
                 
                 {/* Children */}
-                <div className="w-20 flex-shrink-0 space-y-2">
+                <div className="w-16 flex-shrink-0 space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
                     <Users className="w-4 h-4 flex-shrink-0" />
                     {t('hero.children')}
