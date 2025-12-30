@@ -26,9 +26,7 @@ const DestinationCard = ({
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className={`group relative overflow-hidden rounded-2xl cursor-pointer ${
-        featured ? 'aspect-[4/5]' : 'aspect-square'
-      }`}
+      className="group relative overflow-hidden rounded-2xl cursor-pointer aspect-[4/5]"
     >
       <Link to={`/destinations/${id}`}>
         <img
