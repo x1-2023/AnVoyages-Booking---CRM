@@ -209,43 +209,75 @@ const Index = () => {
                 x: useTransform(smoothMouseX, (v) => v * 0.1),
               }}
             >
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
+              <div className="flex flex-col md:flex-row md:items-end gap-4">
+                {/* Location */}
+                <div className="flex-1 space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <MapPin className="w-4 h-4" />
                     {t('hero.search_placeholder')}
                   </label>
                   <Input
                     placeholder="Bali, Tokyo, Santorini..."
-                    className="bg-background/50 border-border"
+                    className="bg-background/50 border-border h-11"
                   />
                 </div>
-                <div className="space-y-2">
+                
+                {/* Check-in */}
+                <div className="flex-1 space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     {t('hero.check_in')}
                   </label>
-                  <Input type="date" className="bg-background/50 border-border" />
+                  <Input type="date" className="bg-background/50 border-border h-11" />
                 </div>
-                <div className="space-y-2">
+                
+                {/* Check-out */}
+                <div className="flex-1 space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     {t('hero.check_out')}
                   </label>
-                  <Input type="date" className="bg-background/50 border-border" />
+                  <Input type="date" className="bg-background/50 border-border h-11" />
                 </div>
-                <div className="space-y-2">
+                
+                {/* Guests - Adults & Children */}
+                <div className="flex-1 space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <Users className="w-4 h-4" />
                     {t('hero.guests')}
                   </label>
                   <div className="flex gap-2">
-                    <Input type="number" defaultValue={2} min={1} className="bg-background/50 border-border flex-1" />
-                    <Button variant="hero" size="lg" className="px-6">
-                      <Search className="w-5 h-5" />
-                    </Button>
+                    <div className="flex-1 relative">
+                      <Input 
+                        type="number" 
+                        defaultValue={2} 
+                        min={1} 
+                        max={10}
+                        className="bg-background/50 border-border h-11 pr-16" 
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                        Người lớn
+                      </span>
+                    </div>
+                    <div className="flex-1 relative">
+                      <Input 
+                        type="number" 
+                        defaultValue={0} 
+                        min={0} 
+                        max={10}
+                        className="bg-background/50 border-border h-11 pr-12" 
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                        Trẻ em
+                      </span>
+                    </div>
                   </div>
                 </div>
+                
+                {/* Search Button */}
+                <Button variant="hero" size="lg" className="h-11 px-6 md:px-8">
+                  <Search className="w-5 h-5" />
+                </Button>
               </div>
             </motion.div>
           </motion.div>
