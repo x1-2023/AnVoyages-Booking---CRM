@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { Globe } from 'lucide-react';
 
 const languages = [
-  { code: 'en', label: 'EN', flag: '🇺🇸' },
-  { code: 'vi', label: 'VI', flag: '🇻🇳' },
+  { code: 'en', label: 'US EN', flag: '🇺🇸' },
+  { code: 'vi', label: 'VN VI', flag: '🇻🇳' },
 ];
 
 const LanguageSwitcher = () => {
