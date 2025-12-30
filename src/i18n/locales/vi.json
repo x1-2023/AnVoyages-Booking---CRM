@@ -13,6 +13,8 @@
     "check_in": "Nhận phòng",
     "check_out": "Trả phòng",
     "guests": "Khách",
+    "adults": "Người lớn",
+    "children": "Trẻ em",
     "search": "Tìm kiếm"
   },
   "destinations": {

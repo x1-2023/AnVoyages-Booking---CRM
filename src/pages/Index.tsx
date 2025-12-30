@@ -241,34 +241,34 @@ const Index = () => {
                 </div>
                 
                 {/* Guests - Adults & Children */}
-                <div className="flex-1 space-y-2">
+                <div className="space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <Users className="w-4 h-4" />
                     {t('hero.guests')}
                   </label>
                   <div className="flex gap-2">
-                    <div className="flex-1 relative">
+                    <div className="relative">
                       <Input 
                         type="number" 
                         defaultValue={2} 
                         min={1} 
                         max={10}
-                        className="bg-background/50 border-border h-11 pr-16" 
+                        className="bg-background/50 border-border h-11 w-24 text-center" 
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                        Người lớn
+                      <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-muted-foreground whitespace-nowrap">
+                        {t('hero.adults')}
                       </span>
                     </div>
-                    <div className="flex-1 relative">
+                    <div className="relative">
                       <Input 
                         type="number" 
                         defaultValue={0} 
                         min={0} 
                         max={10}
-                        className="bg-background/50 border-border h-11 pr-12" 
+                        className="bg-background/50 border-border h-11 w-24 text-center" 
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                        Trẻ em
+                      <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-muted-foreground whitespace-nowrap">
+                        {t('hero.children')}
                       </span>
                     </div>
                   </div>

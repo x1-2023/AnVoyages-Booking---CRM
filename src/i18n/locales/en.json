@@ -13,6 +13,8 @@
     "check_in": "Check-in",
     "check_out": "Check-out",
     "guests": "Guests",
+    "adults": "Adults",
+    "children": "Children",
     "search": "Search"
   },
   "destinations": {
