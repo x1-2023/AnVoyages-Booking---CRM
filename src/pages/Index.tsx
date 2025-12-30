@@ -209,12 +209,12 @@ const Index = () => {
                 x: useTransform(smoothMouseX, (v) => v * 0.1),
               }}
             >
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+              <div className="flex flex-col md:flex-row gap-3 items-end">
                 {/* Location */}
-                <div className="md:col-span-3 space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    {t('hero.search_placeholder')}
+                <div className="flex-1 min-w-0 space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
+                    <MapPin className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{t('hero.search_placeholder')}</span>
                   </label>
                   <Input
                     placeholder="Bali, Tokyo, Santorini..."
@@ -223,64 +223,56 @@ const Index = () => {
                 </div>
                 
                 {/* Check-in */}
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
+                    <Calendar className="w-4 h-4 flex-shrink-0" />
                     {t('hero.check_in')}
                   </label>
                   <Input type="date" className="bg-background/50 border-border h-11" />
                 </div>
                 
                 {/* Check-out */}
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
+                    <Calendar className="w-4 h-4 flex-shrink-0" />
                     {t('hero.check_out')}
                   </label>
                   <Input type="date" className="bg-background/50 border-border h-11" />
                 </div>
                 
-                {/* Guests - Adults & Children */}
-                <div className="md:col-span-4 space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    {t('hero.guests')}
+                {/* Adults */}
+                <div className="flex-1 min-w-0 space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
+                    <Users className="w-4 h-4 flex-shrink-0" />
+                    {t('hero.adults')}
                   </label>
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <div className="relative">
-                        <Input 
-                          type="number" 
-                          defaultValue={2} 
-                          min={1} 
-                          max={10}
-                          className="bg-background/50 border-border h-11 text-center pl-3 pr-20" 
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                          {t('hero.adults')}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="relative">
-                        <Input 
-                          type="number" 
-                          defaultValue={0} 
-                          min={0} 
-                          max={10}
-                          className="bg-background/50 border-border h-11 text-center pl-3 pr-16" 
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                          {t('hero.children')}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  <Input 
+                    type="number" 
+                    defaultValue={2} 
+                    min={1} 
+                    max={10}
+                    className="bg-background/50 border-border h-11 text-center" 
+                  />
+                </div>
+                
+                {/* Children */}
+                <div className="flex-1 min-w-0 space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
+                    <Users className="w-4 h-4 flex-shrink-0" />
+                    {t('hero.children')}
+                  </label>
+                  <Input 
+                    type="number" 
+                    defaultValue={0} 
+                    min={0} 
+                    max={10}
+                    className="bg-background/50 border-border h-11 text-center" 
+                  />
                 </div>
                 
                 {/* Search Button */}
-                <div className="md:col-span-1">
-                  <Button variant="hero" size="lg" className="h-11 w-full">
+                <div className="flex-shrink-0">
+                  <Button variant="hero" size="lg" className="h-11 px-6">
                     <Search className="w-5 h-5" />
                   </Button>
                 </div>
