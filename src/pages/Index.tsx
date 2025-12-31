@@ -135,12 +135,12 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background" ref={containerRef}>
+    <div className="min-h-screen bg-background overflow-x-hidden" ref={containerRef}>
       <Navbar />
 
       {/* Hero Section with Parallax */}
       <section 
-        className="relative h-screen min-h-[700px] flex items-center overflow-hidden"
+        className="relative h-screen min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden"
         onMouseMove={handleMouseMove}
       >
         {/* Background Image with Parallax */}
@@ -178,7 +178,7 @@ const Index = () => {
 
         {/* Content with Parallax */}
         <motion.div 
-          className="relative container-custom mx-auto px-4 md:px-8"
+          className="relative container mx-auto px-4 md:px-8 w-full max-w-7xl"
           style={{ y: heroContentY, opacity: heroOpacity }}
         >
           <motion.div
@@ -188,7 +188,7 @@ const Index = () => {
             className="max-w-2xl"
           >
             <motion.h1 
-              className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-card mb-6 leading-tight"
+              className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-card mb-4 md:mb-6 leading-tight"
               style={{ 
                 x: useTransform(smoothMouseX, (v) => v * -0.2),
               }}
@@ -196,7 +196,7 @@ const Index = () => {
               {t('hero.title')}
             </motion.h1>
             <motion.p 
-              className="text-lg md:text-xl text-card/80 mb-8 leading-relaxed"
+              className="text-base md:text-xl text-card/80 mb-6 md:mb-8 leading-relaxed"
               style={{ 
                 x: useTransform(smoothMouseX, (v) => v * -0.1),
               }}
@@ -209,120 +209,125 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="glass-strong p-4 md:p-6 rounded-2xl"
+              className="glass-strong p-4 md:p-6 rounded-2xl w-full"
               style={{ 
                 x: useTransform(smoothMouseX, (v) => v * 0.1),
               }}
             >
-              <div className="flex flex-col md:flex-row gap-3 items-end">
-                {/* Location */}
-                <div className="flex-1 min-w-0 space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
+              <div className="flex flex-col gap-3">
+                {/* Location - Full width on mobile */}
+                <div className="w-full space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <MapPin className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">{t('hero.search_placeholder')}</span>
+                    <span>{t('hero.search_placeholder')}</span>
                   </label>
                   <Input
                     placeholder="Bali, Tokyo, Santorini..."
-                    className="bg-background/50 border-border h-11"
+                    className="bg-background/50 border-border h-11 w-full"
                   />
                 </div>
                 
-                {/* Check-in */}
-                <div className="flex-1 min-w-0 space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
-                    <CalendarIcon className="w-4 h-4 flex-shrink-0" />
-                    {t('hero.check_in')}
-                  </label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full h-11 justify-start text-left font-normal bg-background/50 border-border",
-                          !checkInDate && "text-muted-foreground"
-                        )}
-                      >
-                        {checkInDate ? format(checkInDate, "dd/MM/yyyy") : <span>Chọn ngày</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={checkInDate}
-                        onSelect={setCheckInDate}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                {/* Dates Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Check-in */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+                      {t('hero.check_in')}
+                    </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full h-11 justify-start text-left font-normal bg-background/50 border-border text-sm",
+                            !checkInDate && "text-muted-foreground"
+                          )}
+                        >
+                          {checkInDate ? format(checkInDate, "dd/MM/yyyy") : <span>Chọn ngày</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={checkInDate}
+                          onSelect={setCheckInDate}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  
+                  {/* Check-out */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+                      {t('hero.check_out')}
+                    </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full h-11 justify-start text-left font-normal bg-background/50 border-border text-sm",
+                            !checkOutDate && "text-muted-foreground"
+                          )}
+                        >
+                          {checkOutDate ? format(checkOutDate, "dd/MM/yyyy") : <span>Chọn ngày</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={checkOutDate}
+                          onSelect={setCheckOutDate}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </div>
                 
-                {/* Check-out */}
-                <div className="flex-1 min-w-0 space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
-                    <CalendarIcon className="w-4 h-4 flex-shrink-0" />
-                    {t('hero.check_out')}
-                  </label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full h-11 justify-start text-left font-normal bg-background/50 border-border",
-                          !checkOutDate && "text-muted-foreground"
-                        )}
-                      >
-                        {checkOutDate ? format(checkOutDate, "dd/MM/yyyy") : <span>Chọn ngày</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={checkOutDate}
-                        onSelect={setCheckOutDate}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                {/* Guests Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Adults */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Users className="w-4 h-4 flex-shrink-0" />
+                      {t('hero.adults')}
+                    </label>
+                    <Input 
+                      type="number" 
+                      defaultValue={2} 
+                      min={1} 
+                      max={10}
+                      className="bg-background/50 border-border h-11 text-center w-full" 
+                    />
+                  </div>
+                  
+                  {/* Children */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Users className="w-4 h-4 flex-shrink-0" />
+                      {t('hero.children')}
+                    </label>
+                    <Input 
+                      type="number" 
+                      defaultValue={0} 
+                      min={0} 
+                      max={10}
+                      className="bg-background/50 border-border h-11 text-center w-full" 
+                    />
+                  </div>
                 </div>
                 
-                {/* Adults */}
-                <div className="w-16 flex-shrink-0 space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
-                    <Users className="w-4 h-4 flex-shrink-0" />
-                    {t('hero.adults')}
-                  </label>
-                  <Input 
-                    type="number" 
-                    defaultValue={2} 
-                    min={1} 
-                    max={10}
-                    className="bg-background/50 border-border h-11 text-center" 
-                  />
-                </div>
-                
-                {/* Children */}
-                <div className="w-16 flex-shrink-0 space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 whitespace-nowrap">
-                    <Users className="w-4 h-4 flex-shrink-0" />
-                    {t('hero.children')}
-                  </label>
-                  <Input 
-                    type="number" 
-                    defaultValue={0} 
-                    min={0} 
-                    max={10}
-                    className="bg-background/50 border-border h-11 text-center" 
-                  />
-                </div>
-                
-                {/* Search Button */}
-                <div className="flex-shrink-0">
-                  <Button variant="hero" size="lg" className="h-11 px-6">
-                    <Search className="w-5 h-5" />
-                  </Button>
-                </div>
+                {/* Search Button - Full width on mobile */}
+                <Button variant="hero" size="lg" className="h-11 w-full md:w-auto md:px-8">
+                  <Search className="w-5 h-5 mr-2" />
+                  <span className="md:hidden">{t('hero.search_button')}</span>
+                </Button>
               </div>
             </motion.div>
           </motion.div>
