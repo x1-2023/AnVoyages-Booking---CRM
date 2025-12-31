@@ -96,6 +96,7 @@ const AdminDashboard = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -123,11 +124,19 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - Desktop */}
       <motion.aside
         initial={false}
         animate={{ width: sidebarOpen ? 256 : 72 }}
-        className="fixed left-0 top-0 h-full bg-card border-r border-border z-50 flex flex-col"
+        className="hidden lg:flex fixed left-0 top-0 h-full bg-card border-r border-border z-50 flex-col"
       >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-border">
@@ -175,33 +184,100 @@ const AdminDashboard = () => {
         </div>
       </motion.aside>
 
+      {/* Sidebar - Mobile */}
+      <motion.aside
+        initial={{ x: "-100%" }}
+        animate={{ x: mobileMenuOpen ? 0 : "-100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="lg:hidden fixed left-0 top-0 h-full w-64 bg-card border-r border-border z-50 flex flex-col"
+      >
+        {/* Logo */}
+        <div className="h-16 flex items-center justify-between px-4 border-b border-border">
+          <Link to="/" className="font-display text-xl font-bold text-primary">
+            TravelNest
+          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-3 space-y-1">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveTab(item.id);
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                activeTab === item.id
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <item.icon className="h-5 w-5 flex-shrink-0" />
+              <span className="font-medium">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        {/* Back to site */}
+        <div className="p-3 border-t border-border">
+          <Link to="/">
+            <Button variant="outline" className="w-full justify-start gap-2">
+              <ChevronLeft className="h-4 w-4" />
+              Về trang chủ
+            </Button>
+          </Link>
+        </div>
+      </motion.aside>
+
       {/* Main Content */}
       <main
         className={`flex-1 transition-all duration-300 ${
-          sidebarOpen ? "ml-64" : "ml-[72px]"
-        }`}
+          sidebarOpen ? "lg:ml-64" : "lg:ml-[72px]"
+        } ml-0`}
       >
         {/* Header */}
-        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 sticky top-0 z-40">
-          <h1 className="text-xl font-display font-semibold text-foreground">
-            {sidebarItems.find((item) => item.id === activeTab)?.label}
-          </h1>
-          <div className="flex items-center gap-4">
-            <div className="relative">
+        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
+          <div className="flex items-center gap-3">
+            {/* Mobile menu button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg md:text-xl font-display font-semibold text-foreground">
+              {sidebarItems.find((item) => item.id === activeTab)?.label}
+            </h1>
+          </div>
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="relative hidden sm:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Tìm kiếm..."
-                className="pl-9 w-64"
+                className="pl-9 w-40 md:w-64"
               />
             </div>
-            <Button size="icon" variant="outline">
+            <Button size="icon" variant="outline" className="hidden sm:flex">
               <Filter className="h-4 w-4" />
+            </Button>
+            <Button size="icon" variant="outline" className="sm:hidden">
+              <Search className="h-4 w-4" />
             </Button>
           </div>
         </header>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           {activeTab === "overview" && <OverviewSection />}
           {activeTab === "bookings" && <BookingsSection bookings={mockBookings} getStatusBadge={getStatusBadge} />}
           {activeTab === "properties" && <PropertiesSection properties={mockProperties} getStatusBadge={getStatusBadge} />}
@@ -226,7 +302,7 @@ const OverviewSection = () => {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.label}
@@ -308,14 +384,14 @@ const OverviewSection = () => {
 // Bookings Section
 const BookingsSection = ({ bookings, getStatusBadge }: { bookings: typeof mockBookings; getStatusBadge: (status: string) => JSX.Element }) => (
   <div className="space-y-4">
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <p className="text-muted-foreground">Quản lý tất cả đặt phòng</p>
-      <Button className="gap-2">
+      <Button className="gap-2 w-full sm:w-auto">
         <Plus className="h-4 w-4" />
         Thêm đặt phòng
       </Button>
     </div>
-    <Card>
+    <Card className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -361,14 +437,14 @@ const BookingsSection = ({ bookings, getStatusBadge }: { bookings: typeof mockBo
 // Properties Section
 const PropertiesSection = ({ properties, getStatusBadge }: { properties: typeof mockProperties; getStatusBadge: (status: string) => JSX.Element }) => (
   <div className="space-y-4">
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <p className="text-muted-foreground">Quản lý bất động sản cho thuê</p>
-      <Button className="gap-2">
+      <Button className="gap-2 w-full sm:w-auto">
         <Plus className="h-4 w-4" />
         Thêm bất động sản
       </Button>
     </div>
-    <Card>
+    <Card className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -414,14 +490,14 @@ const PropertiesSection = ({ properties, getStatusBadge }: { properties: typeof 
 // Destinations Section
 const DestinationsSection = ({ destinations, getStatusBadge }: { destinations: typeof mockDestinations; getStatusBadge: (status: string) => JSX.Element }) => (
   <div className="space-y-4">
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <p className="text-muted-foreground">Quản lý các điểm đến du lịch</p>
-      <Button className="gap-2">
+      <Button className="gap-2 w-full sm:w-auto">
         <Plus className="h-4 w-4" />
         Thêm điểm đến
       </Button>
     </div>
-    <Card>
+    <Card className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -463,14 +539,14 @@ const DestinationsSection = ({ destinations, getStatusBadge }: { destinations: t
 // Blog Section
 const BlogSection = ({ blogs, getStatusBadge }: { blogs: typeof mockBlogs; getStatusBadge: (status: string) => JSX.Element }) => (
   <div className="space-y-4">
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <p className="text-muted-foreground">Quản lý bài viết blog</p>
-      <Button className="gap-2">
+      <Button className="gap-2 w-full sm:w-auto">
         <Plus className="h-4 w-4" />
         Viết bài mới
       </Button>
     </div>
-    <Card>
+    <Card className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -542,12 +618,12 @@ const SettingsSection = () => {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Cài đặt trang web</h2>
           <p className="text-muted-foreground text-sm">Tùy chỉnh thông tin và giao diện trang web</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2 w-full sm:w-auto">
           <Save className="h-4 w-4" />
           Lưu thay đổi
         </Button>
@@ -593,7 +669,7 @@ const SettingsSection = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-start gap-6">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
             <div className="w-32 h-32 border-2 border-dashed border-border rounded-xl flex items-center justify-center bg-muted/50 overflow-hidden">
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo preview" className="w-full h-full object-contain" />
@@ -643,7 +719,7 @@ const SettingsSection = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-start gap-6">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
             <div className="w-20 h-20 border-2 border-dashed border-border rounded-xl flex items-center justify-center bg-muted/50 overflow-hidden">
               {faviconPreview ? (
                 <img src={faviconPreview} alt="Favicon preview" className="w-full h-full object-contain" />
