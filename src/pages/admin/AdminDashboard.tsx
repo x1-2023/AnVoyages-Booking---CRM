@@ -391,7 +391,42 @@ const BookingsSection = ({ bookings, getStatusBadge }: { bookings: typeof mockBo
         Thêm đặt phòng
       </Button>
     </div>
-    <Card className="overflow-x-auto">
+    
+    {/* Mobile Card View */}
+    <div className="md:hidden space-y-3">
+      {bookings.map((booking) => (
+        <Card key={booking.id} className="p-4">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2 flex-1">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-foreground">{booking.guest}</h3>
+                {getStatusBadge(booking.status)}
+              </div>
+              <p className="text-sm text-muted-foreground">{booking.property}</p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                <span><span className="text-muted-foreground">Nhận:</span> {booking.checkIn}</span>
+                <span><span className="text-muted-foreground">Trả:</span> {booking.checkOut}</span>
+              </div>
+              <p className="text-primary font-semibold">{booking.total}</p>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem><Edit className="h-4 w-4 mr-2" /> Chỉnh sửa</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Xóa</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </Card>
+      ))}
+    </div>
+
+    {/* Desktop Table View */}
+    <Card className="hidden md:block overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -444,7 +479,42 @@ const PropertiesSection = ({ properties, getStatusBadge }: { properties: typeof 
         Thêm bất động sản
       </Button>
     </div>
-    <Card className="overflow-x-auto">
+    
+    {/* Mobile Card View */}
+    <div className="md:hidden space-y-3">
+      {properties.map((property) => (
+        <Card key={property.id} className="p-4">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2 flex-1">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-foreground">{property.name}</h3>
+                {getStatusBadge(property.status)}
+              </div>
+              <p className="text-sm text-muted-foreground">{property.location}</p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                <span className="text-primary font-semibold">{property.price}</span>
+                <span>⭐ {property.rating}</span>
+                <span className="text-muted-foreground">{property.bookings} đặt phòng</span>
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem><Edit className="h-4 w-4 mr-2" /> Chỉnh sửa</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Xóa</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </Card>
+      ))}
+    </div>
+
+    {/* Desktop Table View */}
+    <Card className="hidden md:block overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -497,7 +567,46 @@ const DestinationsSection = ({ destinations, getStatusBadge }: { destinations: t
         Thêm điểm đến
       </Button>
     </div>
-    <Card className="overflow-x-auto">
+    
+    {/* Mobile Card View */}
+    <div className="md:hidden space-y-3">
+      {destinations.map((destination) => (
+        <Card key={destination.id} className="p-4">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2 flex-1">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-foreground">{destination.name}</h3>
+                {getStatusBadge(destination.status)}
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Bất động sản:</span>
+                  <span className="ml-1 font-medium">{destination.properties}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Lượt xem:</span>
+                  <span className="ml-1 font-medium">{destination.views.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem><Edit className="h-4 w-4 mr-2" /> Chỉnh sửa</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Xóa</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </Card>
+      ))}
+    </div>
+
+    {/* Desktop Table View */}
+    <Card className="hidden md:block overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -546,7 +655,41 @@ const BlogSection = ({ blogs, getStatusBadge }: { blogs: typeof mockBlogs; getSt
         Viết bài mới
       </Button>
     </div>
-    <Card className="overflow-x-auto">
+    
+    {/* Mobile Card View */}
+    <div className="md:hidden space-y-3">
+      {blogs.map((blog) => (
+        <Card key={blog.id} className="p-4">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2 flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="font-semibold text-foreground line-clamp-2">{blog.title}</h3>
+                {getStatusBadge(blog.status)}
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                <span>{blog.author}</span>
+                <span>{blog.date}</span>
+                <span>{blog.views.toLocaleString()} lượt xem</span>
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem><Edit className="h-4 w-4 mr-2" /> Chỉnh sửa</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Xóa</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </Card>
+      ))}
+    </div>
+
+    {/* Desktop Table View */}
+    <Card className="hidden md:block overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
