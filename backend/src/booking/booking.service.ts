@@ -53,6 +53,10 @@ export class BookingService {
       throw new NotFoundException('Property not found');
     }
 
+    if (property && !property.isActive) {
+      throw new BadRequestException('Property is not available');
+    }
+
     const productOption = createBookingDto.productOptionId
       ? await this.prisma.productOption.findFirst({
           where: {
@@ -82,8 +86,9 @@ export class BookingService {
       },
     });
 
+    const pricing = this.resolveBookingPricing(createBookingDto, property, productOption);
     const unitCost = productOption?.costPrice || property?.costPrice || 0;
-    const totalCost = unitCost ? unitCost * createBookingDto.guests : 0;
+    const totalCost = pricing.fixedDuration ? unitCost : unitCost * pricing.nights;
     const paymentSettings = await this.getSepaySettings();
     const bookingCode = await this.generateBookingCode(paymentSettings.orderPrefix);
     const depositPercent = this.resolveRequestedDepositPercent(
@@ -91,7 +96,7 @@ export class BookingService {
       createBookingDto.bookingIntent,
       paymentSettings.depositPercent,
     );
-    const depositAmount = this.resolveInitialDeposit(createBookingDto.totalPrice, depositPercent);
+    const depositAmount = this.resolveInitialDeposit(pricing.totalPrice, depositPercent);
     const paymentReference = createBookingDto.paymentReference ?? bookingCode;
     const transferContent = createBookingDto.transferContent
       ?? this.buildTransferContent(
@@ -110,10 +115,11 @@ export class BookingService {
         productOptionType: productOption?.optionType,
         productOptionPrice: productOption?.basePrice,
         productOptionDurationDays: productOption?.durationDays ?? property?.durationDays,
-        checkIn: this.normalizeDateInput(createBookingDto.checkIn),
-        checkOut: this.normalizeDateInput(createBookingDto.checkOut),
+        checkIn: pricing.checkIn,
+        checkOut: pricing.checkOut,
         totalCost,
-        profit: Math.max(createBookingDto.totalPrice - totalCost, 0),
+        totalPrice: pricing.totalPrice,
+        profit: Math.max(pricing.totalPrice - totalCost, 0),
         depositAmount,
         depositPercent,
         discountCode: this.normalizeDiscountCode(createBookingDto.discountCode),
@@ -131,7 +137,7 @@ export class BookingService {
         status: 'new',
         travelDate: this.normalizeDateInput(createBookingDto.checkIn),
         numPeople: createBookingDto.guests,
-        budget: createBookingDto.totalPrice,
+        budget: pricing.totalPrice,
         source: 'web',
         notes: createBookingDto.note,
       },
@@ -332,6 +338,59 @@ export class BookingService {
 
   private normalizeDateInput(value: string) {
     return new Date(`${value}T00:00:00.000Z`);
+  }
+
+  private resolveBookingPricing(createBookingDto: CreateBookingDto, property: any, productOption: any) {
+    if (!property) {
+      throw new BadRequestException('Property is required for booking pricing');
+    }
+
+    const guests = Number(createBookingDto.guests);
+    if (!Number.isInteger(guests) || guests < 1) {
+      throw new BadRequestException('Guests must be at least 1');
+    }
+
+    const checkIn = this.normalizeDateInput(createBookingDto.checkIn);
+    const requestedCheckOut = this.normalizeDateInput(createBookingDto.checkOut);
+
+    if (Number.isNaN(checkIn.getTime()) || Number.isNaN(requestedCheckOut.getTime())) {
+      throw new BadRequestException('Invalid booking dates');
+    }
+
+    const durationDays = productOption?.durationDays ?? property.durationDays ?? 0;
+    const fixedDuration = Boolean((property.type === 'tour' || property.type === 'cruise') && durationDays > 0);
+    const unitPrice = productOption?.basePrice ?? property.basePrice;
+
+    if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
+      throw new BadRequestException('Product price is not configured');
+    }
+
+    if (fixedDuration) {
+      const checkOut = new Date(checkIn);
+      checkOut.setUTCDate(checkOut.getUTCDate() + Math.max(durationDays - 1, 1));
+
+      return {
+        checkIn,
+        checkOut,
+        nights: Math.max(durationDays - 1, 1),
+        fixedDuration,
+        totalPrice: Math.round(unitPrice),
+      };
+    }
+
+    if (requestedCheckOut <= checkIn) {
+      throw new BadRequestException('Check-out date must be after check-in date');
+    }
+
+    const nights = Math.ceil((requestedCheckOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+
+    return {
+      checkIn,
+      checkOut: requestedCheckOut,
+      nights,
+      fixedDuration,
+      totalPrice: Math.round(unitPrice * nights),
+    };
   }
 
   private validateStatusTransition(currentStatus: string, newStatus: string) {

@@ -10,6 +10,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
+import { readFile, unlink } from 'fs/promises';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { MediaService } from './media.service';
 
@@ -17,9 +18,31 @@ const settingsUploadDir = join(process.cwd(), 'uploads', 'settings');
 const blogUploadDir = join(process.cwd(), 'uploads', 'blog');
 const productUploadDir = join(process.cwd(), 'uploads', 'products');
 
+interface UploadedImageFile {
+  path: string;
+  filename: string;
+  size: number;
+  mimetype: string;
+}
+
 for (const uploadDir of [settingsUploadDir, blogUploadDir, productUploadDir]) {
   if (!existsSync(uploadDir)) {
     mkdirSync(uploadDir, { recursive: true });
+  }
+}
+
+const allowedImageMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+
+async function assertSafeImage(file: UploadedImageFile) {
+  const header = await readFile(file.path).then((buffer) => buffer.subarray(0, 16));
+  const isJpeg = header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff;
+  const isPng = header.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+  const isGif = header.subarray(0, 6).toString('ascii') === 'GIF87a' || header.subarray(0, 6).toString('ascii') === 'GIF89a';
+  const isWebp = header.subarray(0, 4).toString('ascii') === 'RIFF' && header.subarray(8, 12).toString('ascii') === 'WEBP';
+
+  if (!allowedImageMimeTypes.has(file.mimetype) || !(isJpeg || isPng || isGif || isWebp)) {
+    await unlink(file.path).catch(() => undefined);
+    throw new BadRequestException('Invalid image file');
   }
 }
 
@@ -43,7 +66,7 @@ export class MediaController {
         fileSize: 5 * 1024 * 1024,
       },
       fileFilter: (_, file, callback) => {
-        if (!file.mimetype.startsWith('image/')) {
+        if (!allowedImageMimeTypes.has(file.mimetype)) {
           callback(new BadRequestException('Only image files are allowed'), false);
           return;
         }
@@ -52,10 +75,12 @@ export class MediaController {
       },
     }),
   )
-  uploadHeroImage(@UploadedFile() file: any) {
+  async uploadHeroImage(@UploadedFile() file: UploadedImageFile) {
     if (!file) {
       throw new BadRequestException('Image file is required');
     }
+
+    await assertSafeImage(file);
 
     return {
       url: this.mediaService.getPublicUrl(file.filename),
@@ -81,7 +106,7 @@ export class MediaController {
         fileSize: 8 * 1024 * 1024,
       },
       fileFilter: (_, file, callback) => {
-        if (!file.mimetype.startsWith('image/')) {
+        if (!allowedImageMimeTypes.has(file.mimetype)) {
           callback(new BadRequestException('Only image files are allowed'), false);
           return;
         }
@@ -90,10 +115,12 @@ export class MediaController {
       },
     }),
   )
-  uploadBlogImage(@UploadedFile() file: any) {
+  async uploadBlogImage(@UploadedFile() file: UploadedImageFile) {
     if (!file) {
       throw new BadRequestException('Image file is required');
     }
+
+    await assertSafeImage(file);
 
     return {
       url: this.mediaService.getPublicUrl(file.filename, 'blog'),
@@ -119,7 +146,7 @@ export class MediaController {
         fileSize: 8 * 1024 * 1024,
       },
       fileFilter: (_, file, callback) => {
-        if (!file.mimetype.startsWith('image/')) {
+        if (!allowedImageMimeTypes.has(file.mimetype)) {
           callback(new BadRequestException('Only image files are allowed'), false);
           return;
         }
@@ -128,10 +155,12 @@ export class MediaController {
       },
     }),
   )
-  uploadProductImage(@UploadedFile() file: any) {
+  async uploadProductImage(@UploadedFile() file: UploadedImageFile) {
     if (!file) {
       throw new BadRequestException('Image file is required');
     }
+
+    await assertSafeImage(file);
 
     return {
       url: this.mediaService.getPublicUrl(file.filename, 'products'),

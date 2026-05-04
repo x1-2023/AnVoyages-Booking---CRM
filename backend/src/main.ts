@@ -9,9 +9,16 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix('api');
 
+  const allowedOrigins = (process.env.CORS_ORIGIN?.split(',') || [
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+  ])
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   // CORS
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') || '*',
+    origin: allowedOrigins,
     credentials: true,
   });
 

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import sanitizeHtml from 'sanitize-html';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBlogPostDto } from './dto/create-blog-post.dto';
 import { UpdateBlogPostDto } from './dto/update-blog-post.dto';
@@ -149,28 +150,34 @@ export class BlogService {
   private toPrismaData(dto: Partial<CreateBlogPostDto>, slug?: string, currentStatus?: string) {
     const status = dto.status || currentStatus;
     const shouldPublish = status === 'published';
+    const contentHtml = dto.contentHtml === undefined ? undefined : this.sanitizeContentHtml(dto.contentHtml);
+    const contentHtmlVi = dto.contentHtmlVi === undefined ? undefined : this.sanitizeContentHtml(dto.contentHtmlVi);
+    const contentHtmlEn = dto.contentHtmlEn === undefined ? undefined : this.sanitizeContentHtml(dto.contentHtmlEn);
     const data: any = {
       ...dto,
+      contentHtml,
+      contentHtmlVi,
+      contentHtmlEn,
       tags: dto.tags ? JSON.stringify(dto.tags) : undefined,
       tagsVi: dto.tagsVi ? JSON.stringify(dto.tagsVi) : undefined,
       tagsEn: dto.tagsEn ? JSON.stringify(dto.tagsEn) : undefined,
-      readingMinutes: dto.readingMinutes || this.estimateReadingMinutes(dto.contentHtmlEn || dto.contentHtmlVi || dto.contentHtml || ''),
+      readingMinutes: dto.readingMinutes || this.estimateReadingMinutes(contentHtmlEn || contentHtmlVi || contentHtml || ''),
     };
 
     if (slug) {
       data.slug = slug;
     }
 
-    if (dto.contentHtml && !dto.excerpt) {
-      data.excerpt = this.makeExcerpt(dto.contentHtml);
+    if (contentHtml && !dto.excerpt) {
+      data.excerpt = this.makeExcerpt(contentHtml);
     }
 
-    if (dto.contentHtmlVi && !dto.excerptVi) {
-      data.excerptVi = this.makeExcerpt(dto.contentHtmlVi);
+    if (contentHtmlVi && !dto.excerptVi) {
+      data.excerptVi = this.makeExcerpt(contentHtmlVi);
     }
 
-    if (dto.contentHtmlEn && !dto.excerptEn) {
-      data.excerptEn = this.makeExcerpt(dto.contentHtmlEn);
+    if (contentHtmlEn && !dto.excerptEn) {
+      data.excerptEn = this.makeExcerpt(contentHtmlEn);
     }
 
     if (shouldPublish && currentStatus !== 'published') {
@@ -285,5 +292,67 @@ export class BlogService {
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
+  }
+
+  private sanitizeContentHtml(value: string) {
+    return sanitizeHtml(value || '', {
+      allowedTags: [
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'p',
+        'br',
+        'strong',
+        'b',
+        'em',
+        'i',
+        'u',
+        's',
+        'blockquote',
+        'ul',
+        'ol',
+        'li',
+        'a',
+        'img',
+        'figure',
+        'figcaption',
+        'iframe',
+        'div',
+        'span',
+        'pre',
+        'code',
+        'table',
+        'thead',
+        'tbody',
+        'tr',
+        'th',
+        'td',
+      ],
+      allowedAttributes: {
+        a: ['href', 'target', 'rel', 'title'],
+        img: ['src', 'alt', 'title', 'width', 'height', 'loading'],
+        iframe: ['src', 'title', 'width', 'height', 'allow', 'allowfullscreen', 'frameborder'],
+        div: ['class'],
+        figure: ['class'],
+        figcaption: ['class'],
+        span: ['class'],
+        code: ['class'],
+        pre: ['class'],
+      },
+      allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+      allowedIframeHostnames: ['www.youtube.com', 'youtube.com', 'www.youtube-nocookie.com'],
+      transformTags: {
+        a: sanitizeHtml.simpleTransform('a', {
+          rel: 'noopener noreferrer',
+          target: '_blank',
+        }),
+        img: sanitizeHtml.simpleTransform('img', {
+          loading: 'lazy',
+        }),
+      },
+    }).trim();
   }
 }
