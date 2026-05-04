@@ -122,6 +122,9 @@ export class BookingService {
         productOptionType: productOption?.optionType,
         productOptionPrice: productOption?.basePrice,
         productOptionDurationDays: productOption?.durationDays ?? property?.durationDays,
+        guests: pricing.guests,
+        adultCount: pricing.adultCount,
+        childCount: pricing.childCount,
         checkIn: pricing.checkIn,
         checkOut: pricing.checkOut,
         totalCost,
@@ -352,9 +355,36 @@ export class BookingService {
       throw new BadRequestException('Property is required for booking pricing');
     }
 
-    const guests = Number(createBookingDto.guests);
+    const adultCount = Number(createBookingDto.adultCount ?? createBookingDto.guests);
+    const childCount = Number(createBookingDto.childCount ?? 0);
+    const guests = adultCount + childCount;
+
+    if (!Number.isInteger(adultCount) || adultCount < 1) {
+      throw new BadRequestException('At least one adult is required');
+    }
+
+    if (!Number.isInteger(childCount) || childCount < 0) {
+      throw new BadRequestException('Children count is invalid');
+    }
+
     if (!Number.isInteger(guests) || guests < 1) {
       throw new BadRequestException('Guests must be at least 1');
+    }
+
+    const maxGuests = productOption?.maxGuests ?? property.maxGuests;
+    const maxAdults = productOption?.maxAdults;
+    const maxChildren = productOption?.maxChildren;
+
+    if (maxGuests && guests > maxGuests) {
+      throw new BadRequestException('Guest count exceeds selected option capacity');
+    }
+
+    if (maxAdults && adultCount > maxAdults) {
+      throw new BadRequestException('Adult count exceeds selected option capacity');
+    }
+
+    if (maxChildren !== null && maxChildren !== undefined && childCount > maxChildren) {
+      throw new BadRequestException('Children count exceeds selected option capacity');
     }
 
     const checkIn = this.normalizeDateInput(createBookingDto.checkIn);
@@ -366,7 +396,13 @@ export class BookingService {
 
     const durationDays = productOption?.durationDays ?? property.durationDays ?? 0;
     const fixedDuration = Boolean((property.type === 'tour' || property.type === 'cruise') && durationDays > 0);
-    const unitPrice = productOption?.basePrice ?? property.basePrice;
+    const basePrice = productOption?.basePrice ?? property.basePrice;
+    const adultPrice = productOption?.adultPrice ?? property.adultPrice;
+    const childPrice = productOption?.childPrice ?? property.childPrice;
+    const hasPerGuestPricing = Boolean(adultPrice || childPrice);
+    const unitPrice = hasPerGuestPricing
+      ? (adultCount * Number(adultPrice || basePrice)) + (childCount * Number(childPrice || adultPrice || basePrice))
+      : basePrice;
 
     if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
       throw new BadRequestException('Product price is not configured');
@@ -379,6 +415,9 @@ export class BookingService {
       return {
         checkIn,
         checkOut,
+        guests,
+        adultCount,
+        childCount,
         nights: Math.max(durationDays - 1, 1),
         fixedDuration,
         totalPrice: Math.round(unitPrice),
@@ -394,6 +433,9 @@ export class BookingService {
     return {
       checkIn,
       checkOut: requestedCheckOut,
+      guests,
+      adultCount,
+      childCount,
       nights,
       fixedDuration,
       totalPrice: Math.round(unitPrice * nights),

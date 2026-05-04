@@ -37,8 +37,11 @@ export interface ProductOption {
   childPrice?: number;
   costPrice?: number;
   maxGuests?: number;
+  maxAdults?: number;
+  maxChildren?: number;
   durationDays?: number;
   bedType?: string;
+  bedCount?: number;
   areaSqm?: number;
   images?: string[];
   amenities?: string[];

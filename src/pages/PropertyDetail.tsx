@@ -156,6 +156,21 @@ function getPriceLabel(type?: string, fixedDuration?: boolean, language?: string
   return isVi ? 'giá khởi điểm' : 'starting price';
 }
 
+function getGuestSelection(option?: ProductOption, property?: Property | null, adultCount = 2, childCount = 0) {
+  const maxGuests = option?.maxGuests || property?.maxGuests || 1;
+  const maxAdults = option?.maxAdults || maxGuests;
+  const maxChildren = option?.maxChildren ?? Math.max(maxGuests - 1, 0);
+  const adults = Math.max(1, Math.min(Math.round(adultCount || 1), maxAdults, maxGuests));
+  const availableForChildren = Math.max(maxGuests - adults, 0);
+  const children = Math.max(0, Math.min(Math.round(childCount || 0), maxChildren, availableForChildren));
+
+  return {
+    adultCount: adults,
+    childCount: children,
+    guests: adults + children,
+  };
+}
+
 const PropertyDetail = () => {
   const { id } = useParams();
   const { t, i18n } = useTranslation();
@@ -176,6 +191,8 @@ const PropertyDetail = () => {
     checkIn: '',
     checkOut: '',
     guests: 1,
+    adultCount: 1,
+    childCount: 0,
     notes: '',
     depositPercent: 30,
     discountCode: '',
@@ -193,11 +210,13 @@ const PropertyDetail = () => {
       try {
         setLoading(true);
         const propertyData = await propertyService.getById(id);
+        const defaultOption = propertyData.options?.find((option) => option.isActive !== false);
+        const defaultGuests = getGuestSelection(defaultOption, propertyData);
         setProperty(propertyData);
         setFormData((prev) => ({
           ...prev,
-          guests: propertyData.maxGuests || 1,
-          productOptionId: propertyData.options?.find((option) => option.isActive !== false)?.id || '',
+          ...defaultGuests,
+          productOptionId: defaultOption?.id || '',
         }));
 
         const relatedData = await propertyService.getAll({
@@ -226,8 +245,17 @@ const PropertyDetail = () => {
     () => activeOptions.find((option) => option.id === formData.productOptionId) || activeOptions[0],
     [activeOptions, formData.productOptionId],
   );
-  const selectedUnitPrice = selectedOption?.basePrice || property?.basePrice || 0;
+  const selectedBasePrice = selectedOption?.basePrice || property?.basePrice || 0;
+  const selectedAdultPrice = selectedOption?.adultPrice ?? property?.adultPrice;
+  const selectedChildPrice = selectedOption?.childPrice ?? property?.childPrice;
+  const hasGuestPricing = Boolean(selectedAdultPrice || selectedChildPrice);
+  const selectedUnitPrice = hasGuestPricing
+    ? (formData.adultCount * Number(selectedAdultPrice || selectedBasePrice))
+      + (formData.childCount * Number(selectedChildPrice || selectedAdultPrice || selectedBasePrice))
+    : selectedBasePrice;
   const selectedMaxGuests = selectedOption?.maxGuests || property?.maxGuests || 1;
+  const selectedMaxAdults = selectedOption?.maxAdults || selectedMaxGuests;
+  const selectedMaxChildren = selectedOption?.maxChildren ?? Math.max(selectedMaxGuests - 1, 0);
   const fixedDurationDays = selectedOption?.durationDays || property?.durationDays || 0;
   const shouldUseFixedStartDate = hasFixedStartDate(property?.type, fixedDurationDays);
   const fixedCheckoutOffsetDays = getCheckoutOffsetDays(fixedDurationDays);
@@ -337,6 +365,8 @@ const PropertyDetail = () => {
         checkIn: formData.checkIn,
         checkOut: formData.checkOut,
         guests: formData.guests,
+        adultCount: formData.adultCount,
+        childCount: formData.childCount,
         totalPrice,
         depositPercent,
         discountCode: formData.discountCode.trim() || undefined,
@@ -385,7 +415,7 @@ const PropertyDetail = () => {
           email: '',
           checkIn: '',
           checkOut: '',
-          guests: property.maxGuests || 1,
+          ...getGuestSelection(activeOptions[0], property),
           notes: '',
           depositPercent: 30,
           discountCode: '',
@@ -408,7 +438,7 @@ const PropertyDetail = () => {
         email: '',
         checkIn: '',
         checkOut: '',
-        guests: property.maxGuests || 1,
+        ...getGuestSelection(activeOptions[0], property),
         notes: '',
         depositPercent: 30,
         discountCode: '',
@@ -743,10 +773,11 @@ const PropertyDetail = () => {
                             const nextDurationDays = option?.durationDays || property.durationDays || 0;
                             const nextUsesFixedStartDate = hasFixedStartDate(property.type, nextDurationDays);
                             const checkInDate = parseDateValue(formData.checkIn);
+                            const nextGuests = getGuestSelection(option, property, formData.adultCount, formData.childCount);
                             setFormData({
                               ...formData,
+                              ...nextGuests,
                               productOptionId: value,
-                              guests: Math.min(formData.guests, option?.maxGuests || property.maxGuests || formData.guests),
                               checkOut: nextUsesFixedStartDate && checkInDate
                                 ? format(addDays(checkInDate, getCheckoutOffsetDays(nextDurationDays)), 'yyyy-MM-dd')
                                 : formData.checkOut,
@@ -840,14 +871,54 @@ const PropertyDetail = () => {
                       <label className="text-sm font-medium text-foreground mb-1.5 block">
                         {t('booking.guests')}
                       </label>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={selectedMaxGuests}
-                        value={formData.guests}
-                        onChange={(e) => setFormData({ ...formData, guests: Number(e.target.value) })}
-                        required
-                      />
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-xl border bg-background p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-semibold">{t('homepage.adults')}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {formData.adultCount}/{selectedMaxAdults}
+                              </div>
+                            </div>
+                            <Input
+                              type="number"
+                              min={1}
+                              max={selectedMaxAdults}
+                              value={formData.adultCount}
+                              onChange={(e) => {
+                                const next = getGuestSelection(selectedOption, property, Number(e.target.value), formData.childCount);
+                                setFormData({ ...formData, ...next });
+                              }}
+                              className="h-10 w-24 text-center"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div className="rounded-xl border bg-background p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-semibold">{t('homepage.children')}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {formData.childCount}/{selectedMaxChildren}
+                              </div>
+                            </div>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={selectedMaxChildren}
+                              value={formData.childCount}
+                              onChange={(e) => {
+                                const next = getGuestSelection(selectedOption, property, formData.adultCount, Number(e.target.value));
+                                setFormData({ ...formData, ...next });
+                              }}
+                              className="h-10 w-24 text-center"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <p className="mt-1.5 text-xs text-muted-foreground">
+                        {getGuestLabel(formData.guests, i18n.language)}
+                      </p>
                     </div>
 
                     <div>

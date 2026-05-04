@@ -386,10 +386,18 @@
     "secure_badge": "Thanh toán bảo mật qua SePay",
     "title": "Hoàn tất thanh toán booking {{bookingCode}}",
     "amount_due": "Số tiền cần thanh toán",
-    "open_full_page": "Mở trang thanh toán",
     "missing_title": "Không tìm thấy phiên thanh toán",
     "missing_description": "Phiên thanh toán chỉ tồn tại trong trình duyệt sau khi tạo booking. Vui lòng quay lại tour và tạo yêu cầu thanh toán mới.",
-    "embed_fallback": "Nếu khung thanh toán không hiển thị do chính sách bảo mật của SePay, bấm Mở trang thanh toán."
+    "form_title": "Kiểm tra thông tin trước khi thanh toán",
+    "form_description": "Form thanh toán được chuẩn bị ngay trên An Voyages. Khi tiếp tục, hệ thống sẽ gửi form đã ký bảo mật sang SePay để bạn hoàn tất giao dịch.",
+    "booking_code": "Mã booking",
+    "payment_method": "Phương thức",
+    "invoice_number": "Mã đơn hàng",
+    "transfer_content": "Nội dung thanh toán",
+    "submit_title": "Sẵn sàng thanh toán",
+    "submit_description": "SePay sẽ xử lý thanh toán và đưa bạn về An Voyages khi giao dịch thành công, thất bại hoặc bị hủy.",
+    "pay_now": "Tiếp tục sang SePay",
+    "gateway_note": "Vì lý do bảo mật, bước thanh toán ngân hàng/QR cuối cùng vẫn được xử lý trên cổng SePay sau khi gửi form."
   },
   "filter": {
     "title": "Bộ lọc",

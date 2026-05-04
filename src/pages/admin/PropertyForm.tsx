@@ -44,8 +44,11 @@ const createEmptyOption = (type = 'package'): ProductOption => ({
   basePrice: 0,
   costPrice: 0,
   maxGuests: 1,
+  maxAdults: 2,
+  maxChildren: 0,
   durationDays: undefined,
   bedType: '',
+  bedCount: 1,
   areaSqm: undefined,
   images: [],
   amenities: [],
@@ -79,8 +82,11 @@ function cleanProductOptions(options?: ProductOption[]) {
       childPrice: Number(option.childPrice) || undefined,
       costPrice: Number(option.costPrice) || 0,
       maxGuests: Number(option.maxGuests) || undefined,
+      maxAdults: Number(option.maxAdults) || undefined,
+      maxChildren: Number(option.maxChildren) || undefined,
       durationDays: Number(option.durationDays) || undefined,
       areaSqm: Number(option.areaSqm) || undefined,
+      bedCount: Number(option.bedCount) || undefined,
       sortOrder: Number(option.sortOrder) || index,
       isActive: option.isActive ?? true,
     }))
@@ -737,6 +743,31 @@ export default function PropertyForm() {
                             />
                           </div>
                           <div className="space-y-2">
+                            <Label htmlFor={`option-${index}-max-adults`}>Người lớn tối đa</Label>
+                            <Input
+                              id={`option-${index}-max-adults`}
+                              type="number"
+                              min={1}
+                              value={option.maxAdults || ''}
+                              onChange={(event) => updateProductOption(index, { maxAdults: Number(event.target.value) || undefined })}
+                              placeholder="VD: 2"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`option-${index}-max-children`}>Trẻ em tối đa</Label>
+                            <Input
+                              id={`option-${index}-max-children`}
+                              type="number"
+                              min={0}
+                              value={option.maxChildren ?? ''}
+                              onChange={(event) => updateProductOption(index, { maxChildren: Number(event.target.value) || 0 })}
+                              placeholder="VD: 1"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 md:grid-cols-5">
+                          <div className="space-y-2">
                             <Label htmlFor={`option-${index}-duration-days`}>Thời lượng gói (ngày)</Label>
                             <Input
                               id={`option-${index}-duration-days`}
@@ -754,6 +785,50 @@ export default function PropertyForm() {
                               value={option.bedType || ''}
                               onChange={(event) => updateProductOption(index, { bedType: event.target.value })}
                               placeholder="King / Queen / Twin"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`option-${index}-bed-count`}>Số giường / cabin</Label>
+                            <Input
+                              id={`option-${index}-bed-count`}
+                              type="number"
+                              min={0}
+                              value={option.bedCount || ''}
+                              onChange={(event) => updateProductOption(index, { bedCount: Number(event.target.value) || undefined })}
+                              placeholder="VD: 1"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`option-${index}-adult-price`}>Giá người lớn</Label>
+                            <Input
+                              id={`option-${index}-adult-price`}
+                              type="number"
+                              min={0}
+                              value={option.adultPrice || ''}
+                              onChange={(event) => updateProductOption(index, { adultPrice: Number(event.target.value) || undefined })}
+                              placeholder="Nếu tính theo khách"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`option-${index}-child-price`}>Giá trẻ em</Label>
+                            <Input
+                              id={`option-${index}-child-price`}
+                              type="number"
+                              min={0}
+                              value={option.childPrice || ''}
+                              onChange={(event) => updateProductOption(index, { childPrice: Number(event.target.value) || undefined })}
+                              placeholder="Nếu có"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`option-${index}-area`}>Diện tích m2</Label>
+                            <Input
+                              id={`option-${index}-area`}
+                              type="number"
+                              min={0}
+                              value={option.areaSqm || ''}
+                              onChange={(event) => updateProductOption(index, { areaSqm: Number(event.target.value) || undefined })}
+                              placeholder="VD: 28"
                             />
                           </div>
                         </div>

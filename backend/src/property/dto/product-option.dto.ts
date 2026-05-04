@@ -65,6 +65,16 @@ export class ProductOptionDto {
   @IsOptional()
   maxGuests?: number;
 
+  @ApiProperty({ required: false })
+  @IsInt()
+  @IsOptional()
+  maxAdults?: number;
+
+  @ApiProperty({ required: false })
+  @IsInt()
+  @IsOptional()
+  maxChildren?: number;
+
   @ApiProperty({ required: false, description: 'Fixed itinerary duration in days, useful for tour packages' })
   @IsInt()
   @IsOptional()
@@ -74,6 +84,11 @@ export class ProductOptionDto {
   @IsString()
   @IsOptional()
   bedType?: string;
+
+  @ApiProperty({ required: false })
+  @IsInt()
+  @IsOptional()
+  bedCount?: number;
 
   @ApiProperty({ required: false })
   @IsNumber()

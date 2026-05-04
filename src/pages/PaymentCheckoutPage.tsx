@@ -1,6 +1,6 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { CreditCard, ExternalLink, ShieldCheck } from 'lucide-react';
+import { CreditCard, LockKeyhole, ReceiptText, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -15,38 +15,13 @@ interface StoredCheckout {
 
 const storageKey = (bookingId?: string) => `sepay_checkout_${bookingId || ''}`;
 
-function postCheckoutForm(checkout: SepayCheckout, target?: string) {
-  if (!checkout.checkoutUrl || !checkout.fields) return false;
-
-  const form = document.createElement('form');
-  form.method = checkout.method || 'POST';
-  form.action = checkout.checkoutUrl;
-  if (target) form.target = target;
-  form.style.display = 'none';
-
-  Object.entries(checkout.fields).forEach(([name, value]) => {
-    if (value === undefined || value === null) return;
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = name;
-    input.value = String(value);
-    form.appendChild(input);
-  });
-
-  document.body.appendChild(form);
-  form.submit();
-  form.remove();
-  return true;
-}
-
 export default function PaymentCheckoutPage() {
   const { t } = useTranslation();
   const { formatMoney } = useLocalePreferences();
   const { bookingId } = useParams();
-  const iframeName = useMemo(() => `sepay_checkout_${bookingId || 'booking'}`, [bookingId]);
-  const submittedRef = useRef(false);
   const [stored, setStored] = useState<StoredCheckout | null>(null);
-  const [embedAttempted, setEmbedAttempted] = useState(false);
+  const checkoutFields = useMemo(() => Object.entries(stored?.checkout?.fields ?? {})
+    .filter(([, value]) => value !== undefined && value !== null), [stored]);
 
   useEffect(() => {
     const raw = sessionStorage.getItem(storageKey(bookingId));
@@ -59,25 +34,14 @@ export default function PaymentCheckoutPage() {
     }
   }, [bookingId]);
 
-  useEffect(() => {
-    if (!stored?.checkout || submittedRef.current) return;
-    submittedRef.current = true;
-    const timer = window.setTimeout(() => {
-      const submitted = postCheckoutForm(stored.checkout, iframeName);
-      setEmbedAttempted(submitted);
-    }, 250);
-
-    return () => window.clearTimeout(timer);
-  }, [iframeName, stored]);
-
-  const openFullPage = (event?: FormEvent) => {
-    event?.preventDefault();
-    if (!stored?.checkout) return;
-    postCheckoutForm(stored.checkout);
-  };
-
   const amount = stored?.booking.depositAmount || stored?.booking.totalPrice || 0;
   const bookingCode = stored?.booking.bookingCode || stored?.booking.paymentReference || bookingId;
+  const checkout = stored?.checkout;
+  const canSubmit = Boolean(checkout?.configured && checkout?.checkoutUrl && checkoutFields.length > 0);
+  const fieldValue = (name: string) => checkout?.fields?.[name] ?? checkout?.fields?.[name.toUpperCase()];
+  const invoiceNumber = fieldValue('order_invoice_number') || stored?.booking.paymentReference || bookingCode;
+  const orderDescription = fieldValue('order_description') || stored?.booking.transferContent || bookingCode;
+  const paymentMethod = fieldValue('payment_method') || 'BANK_TRANSFER';
 
   return (
     <div className="min-h-screen bg-background">
@@ -87,7 +51,7 @@ export default function PaymentCheckoutPage() {
         <section className="bg-muted/30 px-4 py-8 md:px-8">
           <div className="container-custom mx-auto">
             <div className="mx-auto max-w-4xl">
-              <div className="mb-5 flex flex-col gap-3 rounded-2xl border bg-card p-5 shadow-sm md:flex-row md:items-center md:justify-between">
+              <div className="mb-5 rounded-2xl border bg-card p-5 shadow-sm">
                 <div>
                   <div className="flex items-center gap-2 text-sm font-semibold text-primary">
                     <ShieldCheck className="h-4 w-4" />
@@ -100,11 +64,6 @@ export default function PaymentCheckoutPage() {
                     {t('payment_checkout.amount_due')}: <span className="font-semibold text-foreground">{formatMoney(amount)}</span>
                   </p>
                 </div>
-
-                <Button type="button" variant="outline" onClick={openFullPage} disabled={!stored?.checkout}>
-                  <ExternalLink className="h-4 w-4" />
-                  {t('payment_checkout.open_full_page')}
-                </Button>
               </div>
 
               {!stored?.checkout ? (
@@ -120,16 +79,86 @@ export default function PaymentCheckoutPage() {
                 </div>
               ) : (
                 <div className="overflow-hidden rounded-2xl border bg-card shadow-xl">
-                  <iframe
-                    name={iframeName}
-                    title="SePay checkout"
-                    className="h-[720px] w-full bg-white"
-                  />
-                  {embedAttempted && (
-                    <div className="border-t bg-muted/40 p-4 text-sm text-muted-foreground">
-                      {t('payment_checkout.embed_fallback')}
+                  <div className="grid gap-0 md:grid-cols-[1fr_360px]">
+                    <div className="p-6 md:p-8">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                        <CreditCard className="h-7 w-7" />
+                      </div>
+
+                      <h2 className="mt-6 font-display text-2xl font-bold text-foreground">
+                        {t('payment_checkout.form_title')}
+                      </h2>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                        {t('payment_checkout.form_description')}
+                      </p>
+
+                      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-2xl bg-muted/50 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            {t('payment_checkout.booking_code')}
+                          </p>
+                          <p className="mt-1 font-semibold text-foreground">{bookingCode}</p>
+                        </div>
+                        <div className="rounded-2xl bg-muted/50 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            {t('payment_checkout.payment_method')}
+                          </p>
+                          <p className="mt-1 font-semibold text-foreground">{String(paymentMethod).replace(/_/g, ' ')}</p>
+                        </div>
+                        <div className="rounded-2xl bg-muted/50 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            {t('payment_checkout.invoice_number')}
+                          </p>
+                          <p className="mt-1 break-words font-semibold text-foreground">{invoiceNumber}</p>
+                        </div>
+                        <div className="rounded-2xl bg-muted/50 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            {t('payment_checkout.amount_due')}
+                          </p>
+                          <p className="mt-1 text-2xl font-bold text-primary">{formatMoney(amount)}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 rounded-2xl border bg-background p-4">
+                        <div className="flex items-start gap-3">
+                          <ReceiptText className="mt-0.5 h-5 w-5 text-primary" />
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">{t('payment_checkout.transfer_content')}</p>
+                            <p className="mt-1 break-words text-sm text-muted-foreground">{orderDescription}</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  )}
+
+                    <div className="border-t bg-muted/30 p-6 md:border-l md:border-t-0 md:p-8">
+                      <div className="rounded-2xl bg-background p-5 shadow-sm">
+                        <LockKeyhole className="h-8 w-8 text-primary" />
+                        <h3 className="mt-4 text-lg font-semibold text-foreground">
+                          {t('payment_checkout.submit_title')}
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          {t('payment_checkout.submit_description')}
+                        </p>
+
+                        <form
+                          method={checkout?.method || 'POST'}
+                          action={checkout?.checkoutUrl}
+                          className="mt-6"
+                        >
+                          {checkoutFields.map(([name, value]) => (
+                            <input key={name} type="hidden" name={name} value={String(value)} />
+                          ))}
+                          <Button type="submit" className="h-12 w-full text-base" disabled={!canSubmit}>
+                            {t('payment_checkout.pay_now')}
+                          </Button>
+                        </form>
+
+                        <p className="mt-4 text-xs leading-5 text-muted-foreground">
+                          {t('payment_checkout.gateway_note')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

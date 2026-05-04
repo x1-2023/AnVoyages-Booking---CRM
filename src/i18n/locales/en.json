@@ -388,10 +388,18 @@
     "secure_badge": "Secure payment via SePay",
     "title": "Complete payment for booking {{bookingCode}}",
     "amount_due": "Amount due",
-    "open_full_page": "Open payment page",
     "missing_title": "Payment session not found",
     "missing_description": "This payment session exists only in this browser after a booking is created. Please go back to the trip and create a new payment request.",
-    "embed_fallback": "If the payment frame does not appear because of SePay security policy, use Open payment page."
+    "form_title": "Review your payment before continuing",
+    "form_description": "This checkout is prepared inside An Voyages. When you continue, we securely send the signed payment form to SePay so you can complete the transaction.",
+    "booking_code": "Booking code",
+    "payment_method": "Payment method",
+    "invoice_number": "Invoice number",
+    "transfer_content": "Payment content",
+    "submit_title": "Ready to pay",
+    "submit_description": "SePay will process the payment and return you to An Voyages when the transaction is completed, failed, or canceled.",
+    "pay_now": "Continue to SePay",
+    "gateway_note": "For security reasons, the final bank/QR payment step is handled on SePay's gateway after this form is submitted."
   },
   "filter": {
     "title": "Filters",

@@ -41,6 +41,16 @@ export class CreateBookingDto {
   @IsInt()
   guests: number;
 
+  @ApiProperty({ required: false, example: 2 })
+  @IsInt()
+  @IsOptional()
+  adultCount?: number;
+
+  @ApiProperty({ required: false, example: 0 })
+  @IsInt()
+  @IsOptional()
+  childCount?: number;
+
   @ApiProperty({ required: false, example: 7000000, description: 'Client estimate only; backend recalculates final price' })
   @IsNumber()
   @IsOptional()

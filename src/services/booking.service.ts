@@ -10,6 +10,8 @@ export interface CreateBookingDto {
   checkIn: string;
   checkOut: string;
   guests: number;
+  adultCount?: number;
+  childCount?: number;
   totalPrice: number;
   depositPercent?: number;
   discountCode?: string;

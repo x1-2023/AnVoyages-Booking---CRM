@@ -106,8 +106,11 @@ model ProductOption {
   childPrice  Float?
   costPrice   Float    @default(0)
   maxGuests   Int?
+  maxAdults   Int?
+  maxChildren Int?
   durationDays Int?
   bedType     String?
+  bedCount    Int?
   areaSqm     Float?
   images      String?
   amenities   String?
@@ -158,6 +161,8 @@ model Booking {
   checkIn      DateTime
   checkOut     DateTime
   guests       Int      @default(1)
+  adultCount   Int      @default(1)
+  childCount   Int      @default(0)
   totalCost    Float    @default(0)
   totalPrice   Float
   profit       Float    @default(0)
