@@ -1,0 +1,362 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("admin") // admin, super_admin
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+model Location {
+  id             String     @id @default(uuid())
+  name           String
+  nameVi         String?
+  nameEn         String?
+  slug           String     @unique
+  description    String?
+  descriptionVi  String?
+  descriptionEn  String?
+  isActive       Boolean    @default(true)
+  seoTitle       String?
+  seoTitleVi     String?
+  seoTitleEn     String?
+  seoDescription String?
+  seoDescriptionVi String?
+  seoDescriptionEn String?
+  imageUrl       String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  properties     Property[]
+  bookings       Booking[]
+
+  @@map("locations")
+}
+
+model Property {
+  id          String   @id @default(uuid())
+  name        String
+  nameVi      String?
+  nameEn      String?
+  locationId  String
+  supplierId  String?
+  type        String   // hotel, homestay, tour, cruise
+  description String?
+  descriptionVi String?
+  descriptionEn String?
+  durationDays Int?
+  costPrice   Float    @default(0)
+  basePrice   Float
+  adultPrice  Float?
+  childPrice  Float?
+  extraFee    Float    @default(0)
+  pricingRules String? // JSON string array of seasonal/date pricing rules
+  isActive    Boolean  @default(true)
+  images      String?  // JSON string array of image URLs
+  amenities   String?  // JSON string array of amenities
+  amenitiesVi String?  // JSON string array of Vietnamese amenities
+  amenitiesEn String?  // JSON string array of English amenities
+  maxGuests   Int?
+  seoTitleVi  String?
+  seoTitleEn  String?
+  seoDescriptionVi String?
+  seoDescriptionEn String?
+  seoKeywordsVi String?
+  seoKeywordsEn String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  location    Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  bookings    Booking[]
+  leads       Lead[]
+  options     ProductOption[]
+
+  @@map("properties")
+}
+
+model ProductOption {
+  id          String   @id @default(uuid())
+  propertyId  String
+  optionType  String   @default("package") // room, cabin, package, vehicle, addon
+  name        String
+  nameVi      String?
+  nameEn      String?
+  description String?
+  descriptionVi String?
+  descriptionEn String?
+  basePrice   Float
+  adultPrice  Float?
+  childPrice  Float?
+  costPrice   Float    @default(0)
+  maxGuests   Int?
+  durationDays Int?
+  bedType     String?
+  areaSqm     Float?
+  images      String?
+  amenities   String?
+  amenitiesVi String?
+  amenitiesEn String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bookings    Booking[]
+
+  @@map("product_options")
+}
+
+model ProductCategory {
+  id          String   @id @default(uuid())
+  name        String
+  nameVi      String?
+  nameEn      String?
+  slug        String   @unique
+  description String?
+  descriptionVi String?
+  descriptionEn String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("product_categories")
+}
+
+model Booking {
+  id           String   @id @default(uuid())
+  bookingCode  String?  @unique
+  customerId   String?
+  customerName String
+  phone        String
+  email        String?
+  locationId   String
+  propertyId   String?
+  productOptionId String?
+  productOptionName String?
+  productOptionType String?
+  productOptionPrice Float?
+  productOptionDurationDays Int?
+  checkIn      DateTime
+  checkOut     DateTime
+  guests       Int      @default(1)
+  totalCost    Float    @default(0)
+  totalPrice   Float
+  profit       Float    @default(0)
+  depositAmount Float   @default(0)
+  depositPercent Float  @default(50)
+  discountCode String?
+  paidAmount   Float    @default(0)
+  bookingIntent String  @default("consultation") // consultation, pay_deposit, pay_full
+  requestedPaymentMethod String?
+  paymentStatus String  @default("unpaid") // unpaid, deposit, paid, refunded
+  paymentReference String?
+  transferContent String?
+  status       String   @default("pending") // pending, contacted, quoted, confirmed, deposit, paid, completed, cancelled
+  note         String?
+  adminNote    String?  // Internal note for admin
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  customer     Customer? @relation(fields: [customerId], references: [id])
+  location     Location  @relation(fields: [locationId], references: [id])
+  property     Property? @relation(fields: [propertyId], references: [id])
+  productOption ProductOption? @relation(fields: [productOptionId], references: [id], onDelete: SetNull)
+  payments     Payment[]
+
+  @@map("bookings")
+}
+
+model Customer {
+  id             String          @id @default(uuid())
+  name           String
+  phone          String?         @unique
+  email          String?
+  source         String?         @default("web")
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  leads          Lead[]
+  bookings       Booking[]
+  communications Communication[]
+
+  @@map("customers")
+}
+
+model Lead {
+  id          String   @id @default(uuid())
+  customerId  String?
+  propertyId  String?
+  status      String   @default("new") // new, contacted, quoted, confirmed, lost
+  travelDate  DateTime?
+  numPeople   Int      @default(1)
+  budget      Float?
+  source      String?  @default("web")
+  notes       String?
+  assignedTo  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  property    Property? @relation(fields: [propertyId], references: [id])
+
+  @@map("leads")
+}
+
+model Supplier {
+  id            String   @id @default(uuid())
+  name          String
+  type          String   // cruise, hotel, transport, tour_operator
+  contactPerson String?
+  phone         String?
+  email         String?
+  address       String?
+  contractRate  String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  properties    Property[]
+
+  @@map("suppliers")
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  bookingId     String
+  amount        Float
+  method        String   @default("bank_transfer")
+  type          String   @default("deposit") // deposit, final_payment, refund
+  referenceCode String?
+  transferContent String?
+  note          String?
+  createdAt     DateTime @default(now())
+
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Communication {
+  id          String   @id @default(uuid())
+  customerId  String
+  type        String   @default("call")
+  content     String
+  direction   String   @default("outbound")
+  createdAt   DateTime @default(now())
+
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("communications")
+}
+
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model IntegrationChannel {
+  id          String   @id @default(uuid())
+  provider    String   @unique // facebook, instagram, tiktok, zalo, sepay
+  name        String
+  status      String   @default("not_connected") // not_connected, connected, paused, error
+  externalId  String?
+  webhookUrl  String?
+  accessToken String?
+  config      String?
+  lastSyncAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  automationRules AutomationRule[]
+
+  @@map("integration_channels")
+}
+
+model AutomationRule {
+  id          String   @id @default(uuid())
+  channelId   String?
+  name        String
+  trigger     String   // new_message, new_comment, new_lead, lead_idle
+  conditions  String?
+  action      String   // create_lead, tag_lead, auto_reply, notify_admin
+  template    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  channel     IntegrationChannel? @relation(fields: [channelId], references: [id])
+
+  @@map("automation_rules")
+}
+
+model BlogPost {
+  id             String    @id @default(uuid())
+  title          String
+  titleVi        String?
+  titleEn        String?
+  slug           String    @unique
+  slugVi         String?
+  slugEn         String?
+  excerpt        String?
+  excerptVi      String?
+  excerptEn      String?
+  contentHtml    String
+  contentHtmlVi  String?
+  contentHtmlEn  String?
+  coverImage     String?
+  category       String?
+  categoryVi     String?
+  categoryEn     String?
+  tags           String?
+  tagsVi         String?
+  tagsEn         String?
+  authorName     String    @default("An Voyages")
+  status         String    @default("draft") // draft, published, archived
+  statusVi       String    @default("draft")
+  statusEn       String    @default("draft")
+  featured       Boolean   @default(false)
+  readingMinutes Int       @default(1)
+  seoTitle       String?
+  seoTitleVi     String?
+  seoTitleEn     String?
+  seoDescription String?
+  seoDescriptionVi String?
+  seoDescriptionEn String?
+  seoKeywords    String?
+  seoKeywordsVi  String?
+  seoKeywordsEn  String?
+  canonicalUrl   String?
+  ogImage        String?
+  publishedAt    DateTime?
+  publishedAtVi  DateTime?
+  publishedAtEn  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("blog_posts")
+}

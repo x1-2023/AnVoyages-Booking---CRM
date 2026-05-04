@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Plane } from 'lucide-react';
+import { Menu, X, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useSettings } from '@/contexts/SettingsContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import CurrencySwitcher from './CurrencySwitcher';
 
 const Navbar = () => {
   const { t } = useTranslation();
+  const { settings } = useSettings();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -46,12 +49,12 @@ const Navbar = () => {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group">
               <div className="w-10 h-10 rounded-xl bg-gradient-hero flex items-center justify-center shadow-glow group-hover:shadow-xl transition-shadow">
-                <Plane className="w-5 h-5 text-primary-foreground" />
+                <Compass className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className={`text-xl font-display font-bold ${
                 isScrolled || !isHeroPage ? 'text-foreground' : 'text-card'
               }`}>
-                Wanderlust
+                {settings.site_name || 'An Voyages'}
               </span>
             </Link>
 
@@ -83,8 +86,11 @@ const Navbar = () => {
               <div className="hidden md:block">
                 <LanguageSwitcher />
               </div>
-              <Button variant="accent" size="sm" className="hidden md:flex">
-                {t('properties.book_now')}
+              <div className="hidden xl:block">
+                <CurrencySwitcher />
+              </div>
+              <Button asChild variant="accent" size="sm" className="hidden md:flex">
+                <Link to="/contact">{t('hero.secondary_cta')}</Link>
               </Button>
 
               {/* Mobile Menu Button */}
@@ -142,8 +148,11 @@ const Navbar = () => {
                 </nav>
                 <div className="mt-8 space-y-4">
                   <LanguageSwitcher />
-                  <Button variant="accent" className="w-full">
-                    {t('properties.book_now')}
+                  <CurrencySwitcher />
+                  <Button asChild variant="accent" className="w-full">
+                    <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+                      {t('hero.secondary_cta')}
+                    </Link>
                   </Button>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
@@ -9,259 +9,354 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PropertyCard from '@/components/PropertyCard';
-
-import destinationSantorini from '@/assets/destination-santorini.jpg';
-import destinationHalong from '@/assets/destination-halong.jpg';
-import propertyVilla from '@/assets/property-villa-1.jpg';
-import propertyCabin from '@/assets/property-cabin.jpg';
-import propertyHotel from '@/assets/property-hotel.jpg';
-import propertyTreehouse from '@/assets/property-treehouse.jpg';
-
-const locationData: Record<string, { name: string; image: string; description: string }> = {
-  santorini: {
-    name: 'Santorini, Greece',
-    image: destinationSantorini,
-    description: 'Experience the iconic white-washed buildings and stunning sunsets of this Greek paradise.',
-  },
-  halong: {
-    name: 'Ha Long Bay, Vietnam',
-    image: destinationHalong,
-    description: 'Explore the majestic limestone karsts rising from emerald waters in this UNESCO World Heritage site.',
-  },
-};
-
-const allProperties = [
-  {
-    id: 'ocean-villa',
-    image: propertyVilla,
-    title: 'Luxury Ocean Villa',
-    location: 'Santorini, Greece',
-    price: 450,
-    rating: 4.9,
-    guests: 6,
-    bedrooms: 3,
-  },
-  {
-    id: 'mountain-cabin',
-    image: propertyCabin,
-    title: 'Alpine Mountain Cabin',
-    location: 'Ha Long Bay, Vietnam',
-    price: 280,
-    rating: 4.8,
-    guests: 4,
-    bedrooms: 2,
-  },
-  {
-    id: 'coastal-hotel',
-    image: propertyHotel,
-    title: 'Coastal Boutique Hotel',
-    location: 'Santorini, Greece',
-    price: 195,
-    rating: 4.7,
-    guests: 2,
-    bedrooms: 1,
-  },
-  {
-    id: 'jungle-treehouse',
-    image: propertyTreehouse,
-    title: 'Jungle Treehouse Retreat',
-    location: 'Ha Long Bay, Vietnam',
-    price: 165,
-    rating: 4.9,
-    guests: 2,
-    bedrooms: 1,
-  },
-];
-
-const propertyTypes = ['Villa', 'Hotel', 'Cabin', 'Apartment', 'Treehouse'];
-const amenities = ['WiFi', 'Pool', 'Kitchen', 'Parking', 'Beach Access', 'Spa'];
+import DestinationCard from '@/components/DestinationCard';
+import { locationService, Location } from '@/services/location.service';
+import { propertyService, Property } from '@/services/property.service';
+import { filterLocationProperties, getLocationBySlugOrId, getPriceRangeBounds, getPropertyAmenities, mapLocationHero, mapLocationToCard, mapPropertyToCard } from '@/lib/publicData';
+import { useToast } from '@/hooks/use-toast';
+import { setJsonLd, setSeoMeta } from '@/lib/seo';
+import { getAmenityLabel } from '@/lib/amenities';
 
 const DestinationPage = () => {
   const { id } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [showFilters, setShowFilters] = useState(false);
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+  const [loading, setLoading] = useState(true);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [location, setLocation] = useState<Location | null>(null);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000000 });
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 
-  const location = locationData[id as string] || locationData.santorini;
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const locations = await locationService.getAll(true);
+        setLocations(locations);
+
+        if (!id) {
+          setLocation(null);
+          setProperties([]);
+          return;
+        }
+
+        const matchedLocation = getLocationBySlugOrId(locations, id);
+
+        if (!matchedLocation) {
+          setLocation(null);
+          setProperties([]);
+          return;
+        }
+
+        setLocation(matchedLocation);
+        const propertyData = await propertyService.getAll({ locationId: matchedLocation.id, isActive: true });
+        setProperties(propertyData);
+        setPriceRange(getPriceRangeBounds(propertyData));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : t('destinations.load_error');
+        toast({
+          title: t('common.error'),
+          description: message,
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [id, toast, t]);
+
+  const getTypeLabel = (type: string) => t(`property_types.${type}`, {
+    defaultValue: type.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
+  });
+
+  const propertyTypes = useMemo(
+    () => Array.from(new Set(properties.map((property) => property.type))),
+    [properties],
+  );
+
+  const amenities = useMemo(
+    () =>
+      Array.from(
+        new Set(properties.flatMap((property) => getPropertyAmenities(property, i18n.language).map((amenity) => getAmenityLabel(amenity).toLowerCase()))),
+      ),
+    [properties],
+  );
+
+  const defaultBounds = useMemo(() => getPriceRangeBounds(properties), [properties]);
+
+  const filteredProperties = useMemo(() => {
+    if (!location) return [];
+
+    return filterLocationProperties(
+      properties,
+      location.id,
+      priceRange.min,
+      priceRange.max,
+      selectedTypes,
+      selectedAmenities,
+      i18n.language,
+    );
+  }, [i18n.language, location, priceRange.max, priceRange.min, properties, selectedAmenities, selectedTypes]);
 
   const toggleType = (type: string) => {
     setSelectedTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+      prev.includes(type) ? prev.filter((item) => item !== type) : [...prev, type],
     );
   };
 
   const toggleAmenity = (amenity: string) => {
     setSelectedAmenities((prev) =>
-      prev.includes(amenity) ? prev.filter((a) => a !== amenity) : [...prev, amenity]
+      prev.includes(amenity) ? prev.filter((item) => item !== amenity) : [...prev, amenity],
     );
   };
 
   const clearFilters = () => {
-    setPriceRange({ min: 0, max: 1000 });
     setSelectedTypes([]);
     setSelectedAmenities([]);
+    setPriceRange(defaultBounds);
   };
+
+  useEffect(() => {
+    if (!id) {
+      setSeoMeta({
+        title: t('seo.destinations.title'),
+        description: t('seo.destinations.description'),
+        keywords: t('seo.destinations.keywords'),
+        canonicalUrl: `${window.location.origin}/destinations`,
+      });
+      setJsonLd('destinations-list', {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: t('seo.destinations.collection_name'),
+        url: `${window.location.origin}/destinations`,
+        provider: { '@type': 'TravelAgency', name: 'An Voyages' },
+      });
+      return;
+    }
+
+    if (!location) return;
+
+    const localizedLocationName = location.nameEn && i18n.language.startsWith('en') ? location.nameEn : location.nameVi || location.name;
+    const localizedSeoTitle = i18n.language.startsWith('en') ? location.seoTitleEn || location.seoTitle : location.seoTitleVi || location.seoTitle;
+    const localizedSeoDescription = i18n.language.startsWith('en')
+      ? location.seoDescriptionEn || location.seoDescription
+      : location.seoDescriptionVi || location.seoDescription;
+    const title = localizedSeoTitle || t('seo.destination_detail.title', { name: localizedLocationName });
+    const description =
+      location.seoDescription ||
+      location.description ||
+      t('seo.destination_detail.description', { name: localizedLocationName });
+
+    setSeoMeta({
+      title,
+      description,
+      keywords: t('seo.destination_detail.keywords', { name: localizedLocationName }),
+      canonicalUrl: `${window.location.origin}/destinations/${location.slug || location.id}`,
+      image: location.imageUrl,
+    });
+
+    setJsonLd('destination', {
+      '@context': 'https://schema.org',
+      '@type': 'TouristDestination',
+      name: localizedLocationName,
+      description,
+      image: location.imageUrl,
+      url: `${window.location.origin}/destinations/${location.slug || location.id}`,
+    });
+  }, [id, location, t]);
+
+    const hero = location ? mapLocationHero(location, i18n.language) : null;
+
+  if (!id) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="pt-24">
+          <section className="px-4 pb-8 pt-6 md:px-8 md:pb-14">
+            <div className="container-custom mx-auto">
+              <div className="mx-auto max-w-3xl text-center">
+                <h1 className="font-display text-4xl font-bold text-foreground md:text-5xl">
+                  {t('destinations.page_title')}
+                </h1>
+                <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  {t('destinations.page_subtitle')}
+                </p>
+              </div>
+
+              {loading ? (
+                <div className="mt-10 text-center text-muted-foreground">{t('destinations.loading')}</div>
+              ) : locations.length === 0 ? (
+                <div className="mt-10 rounded-2xl border bg-card p-8 text-center text-muted-foreground">
+                  {t('destinations.empty')}
+                </div>
+              ) : (
+                <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+                  {locations.map((item) => (
+              <DestinationCard key={item.id} {...mapLocationToCard(item, i18n.language)} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero Banner */}
-      <section className="relative h-[50vh] min-h-[400px]">
-        <img
-          src={location.image}
-          alt={location.name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-overlay" />
-        <div className="absolute inset-0 flex items-end">
-          <div className="container-custom mx-auto px-4 md:px-8 pb-12">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 text-card/80 hover:text-card transition-colors mb-4"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              {t('common.back')}
-            </Link>
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="font-display text-4xl md:text-5xl font-bold text-card mb-4"
-            >
-              {location.name}
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-card/80 text-lg max-w-2xl"
-            >
-              {location.description}
-            </motion.p>
+      {hero && (
+        <section className="relative h-[50vh] min-h-[400px]">
+          <img src={hero.image} alt={hero.name} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-overlay" />
+          <div className="absolute inset-0 flex items-end">
+            <div className="container-custom mx-auto px-4 md:px-8 pb-12">
+              <Link
+                to="/destinations"
+                className="inline-flex items-center gap-2 text-card/80 hover:text-card transition-colors mb-4"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                {t('common.back')}
+              </Link>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="font-display text-4xl md:text-5xl font-bold text-card mb-4"
+              >
+                {hero.name}
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-card/80 text-lg max-w-2xl"
+              >
+                {hero.description}
+              </motion.p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Content */}
       <section className="section-padding">
         <div className="container-custom mx-auto px-4 md:px-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sidebar Filters - Desktop */}
-            <aside className="hidden lg:block w-72 flex-shrink-0">
-              <div className="sticky top-24 bg-card p-6 rounded-2xl shadow-md border border-border">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-display font-semibold text-lg">{t('filter.title')}</h3>
-                  <button
-                    onClick={clearFilters}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    {t('filter.clear')}
-                  </button>
-                </div>
+          {!loading && !location && (
+            <div className="rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
+              {t('destinations.not_found')}
+            </div>
+          )}
 
-                {/* Price Range */}
-                <div className="mb-6">
-                  <label className="font-medium text-sm mb-3 block">
-                    {t('filter.price_range')}
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={priceRange.min}
-                      onChange={(e) =>
-                        setPriceRange({ ...priceRange, min: Number(e.target.value) })
-                      }
-                      className="w-full"
-                    />
-                    <span className="text-muted-foreground">-</span>
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={priceRange.max}
-                      onChange={(e) =>
-                        setPriceRange({ ...priceRange, max: Number(e.target.value) })
-                      }
-                      className="w-full"
-                    />
+          {(loading || location) && (
+            <div className="flex flex-col lg:flex-row gap-8">
+              <aside className="hidden lg:block w-72 flex-shrink-0">
+                <div className="sticky top-24 bg-card p-6 rounded-2xl shadow-md border border-border">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-display font-semibold text-lg">{t('filter.title')}</h3>
+                    <button onClick={clearFilters} className="text-sm text-primary hover:underline">
+                      {t('filter.clear')}
+                    </button>
                   </div>
-                </div>
 
-                {/* Property Type */}
-                <div className="mb-6">
-                  <label className="font-medium text-sm mb-3 block">
-                    {t('filter.property_type')}
-                  </label>
-                  <div className="space-y-2">
-                    {propertyTypes.map((type) => (
-                      <div key={type} className="flex items-center gap-2">
-                        <Checkbox
-                          id={type}
-                          checked={selectedTypes.includes(type)}
-                          onCheckedChange={() => toggleType(type)}
-                        />
-                        <label htmlFor={type} className="text-sm cursor-pointer">
-                          {type}
-                        </label>
-                      </div>
-                    ))}
+                  <div className="mb-6">
+                    <label className="font-medium text-sm mb-3 block">{t('filter.price_range')}</label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        placeholder="Min"
+                        value={priceRange.min}
+                        onChange={(e) => setPriceRange((prev) => ({ ...prev, min: Number(e.target.value) }))}
+                        className="w-full"
+                      />
+                      <span className="text-muted-foreground">-</span>
+                      <Input
+                        type="number"
+                        placeholder="Max"
+                        value={priceRange.max}
+                        onChange={(e) => setPriceRange((prev) => ({ ...prev, max: Number(e.target.value) }))}
+                        className="w-full"
+                      />
+                    </div>
                   </div>
-                </div>
 
-                {/* Amenities */}
-                <div className="mb-6">
-                  <label className="font-medium text-sm mb-3 block">
-                    {t('filter.amenities')}
-                  </label>
-                  <div className="space-y-2">
-                    {amenities.map((amenity) => (
-                      <div key={amenity} className="flex items-center gap-2">
-                        <Checkbox
-                          id={amenity}
-                          checked={selectedAmenities.includes(amenity)}
-                          onCheckedChange={() => toggleAmenity(amenity)}
-                        />
-                        <label htmlFor={amenity} className="text-sm cursor-pointer">
-                          {amenity}
-                        </label>
-                      </div>
-                    ))}
+                  <div className="mb-6">
+                    <label className="font-medium text-sm mb-3 block">{t('filter.property_type')}</label>
+                    <div className="space-y-2">
+                      {propertyTypes.map((type) => (
+                        <div key={type} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`type-${type}`}
+                            checked={selectedTypes.includes(type)}
+                            onCheckedChange={() => toggleType(type)}
+                          />
+                          <label htmlFor={`type-${type}`} className="text-sm cursor-pointer">
+                            {getTypeLabel(type)}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                <Button variant="default" className="w-full">
-                  {t('filter.apply')}
+                  <div className="mb-6">
+                    <label className="font-medium text-sm mb-3 block">{t('filter.amenities')}</label>
+                    <div className="space-y-2">
+                      {amenities.map((amenity) => (
+                        <div key={amenity} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`amenity-${amenity}`}
+                            checked={selectedAmenities.includes(amenity)}
+                            onCheckedChange={() => toggleAmenity(amenity)}
+                          />
+                          <label htmlFor={`amenity-${amenity}`} className="text-sm cursor-pointer capitalize">
+                            {amenity}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button variant="default" className="w-full" onClick={() => undefined}>
+                    {t('filter.apply')}
+                  </Button>
+                </div>
+              </aside>
+
+              <div className="lg:hidden">
+                <Button variant="outline" onClick={() => setShowFilters(true)} className="w-full">
+                  <SlidersHorizontal className="w-4 h-4 mr-2" />
+                  {t('filter.title')}
                 </Button>
               </div>
-            </aside>
 
-            {/* Mobile Filter Button */}
-            <div className="lg:hidden">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(true)}
-                className="w-full"
-              >
-                <SlidersHorizontal className="w-4 h-4 mr-2" />
-                {t('filter.title')}
-              </Button>
-            </div>
+              <div className="flex-1">
+                <div className="mb-4 text-muted-foreground text-sm">
+                  {loading ? t('properties.loading') : t('properties.result_count', { count: filteredProperties.length })}
+                </div>
 
-            {/* Property Grid */}
-            <div className="flex-1">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {allProperties.map((property) => (
-                  <PropertyCard key={property.id} {...property} />
-                ))}
+                {!loading && filteredProperties.length === 0 && (
+                  <div className="rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
+                    {t('destinations.no_products')}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {filteredProperties.map((property) => (
+                <PropertyCard key={property.id} {...mapPropertyToCard(property, i18n.language)} />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
-      {/* Mobile Filter Modal */}
       {showFilters && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -286,16 +381,59 @@ const DestinationPage = () => {
               </button>
             </div>
 
-            {/* Filter content similar to desktop */}
             <div className="space-y-6">
               <div>
-                <label className="font-medium text-sm mb-3 block">
-                  {t('filter.price_range')}
-                </label>
+                <label className="font-medium text-sm mb-3 block">{t('filter.price_range')}</label>
                 <div className="flex items-center gap-2">
-                  <Input type="number" placeholder="Min" className="w-full" />
+                  <Input
+                    type="number"
+                    placeholder="Min"
+                    value={priceRange.min}
+                    onChange={(e) => setPriceRange((prev) => ({ ...prev, min: Number(e.target.value) }))}
+                  />
                   <span>-</span>
-                  <Input type="number" placeholder="Max" className="w-full" />
+                  <Input
+                    type="number"
+                    placeholder="Max"
+                    value={priceRange.max}
+                    onChange={(e) => setPriceRange((prev) => ({ ...prev, max: Number(e.target.value) }))}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-medium text-sm mb-3 block">{t('filter.property_type')}</label>
+                <div className="space-y-2">
+                  {propertyTypes.map((type) => (
+                    <div key={type} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`mobile-type-${type}`}
+                        checked={selectedTypes.includes(type)}
+                        onCheckedChange={() => toggleType(type)}
+                      />
+                      <label htmlFor={`mobile-type-${type}`} className="text-sm cursor-pointer">
+                            {getTypeLabel(type)}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="font-medium text-sm mb-3 block">{t('filter.amenities')}</label>
+                <div className="space-y-2">
+                  {amenities.map((amenity) => (
+                    <div key={amenity} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`mobile-amenity-${amenity}`}
+                        checked={selectedAmenities.includes(amenity)}
+                        onCheckedChange={() => toggleAmenity(amenity)}
+                      />
+                      <label htmlFor={`mobile-amenity-${amenity}`} className="text-sm cursor-pointer capitalize">
+                        {amenity}
+                      </label>
+                    </div>
+                  ))}
                 </div>
               </div>
 

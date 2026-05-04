@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plane, Facebook, Twitter, Instagram, Youtube, Send } from 'lucide-react';
+import { Compass, Facebook, Twitter, Instagram, Youtube, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useSettings } from '@/contexts/SettingsContext';
 
 const Footer = () => {
   const { t } = useTranslation();
+  const { settings } = useSettings();
 
   const quickLinks = [
     { path: '/', label: t('nav.home') },
@@ -29,14 +31,14 @@ const Footer = () => {
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-hero flex items-center justify-center">
-                <Plane className="w-5 h-5 text-primary-foreground" />
+                <Compass className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="text-xl font-display font-bold text-card">
-                Wanderlust
+                {settings.site_name || 'An Voyages'}
               </span>
             </Link>
             <p className="text-card/70 text-sm leading-relaxed">
-              {t('footer.description')}
+              {settings.site_tagline || t('footer.description')}
             </p>
             <div className="flex gap-3">
               {[Facebook, Twitter, Instagram, Youtube].map((Icon, i) => (
@@ -112,7 +114,7 @@ const Footer = () => {
 
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-card/10 text-center text-card/50 text-sm">
-          © {new Date().getFullYear()} Wanderlust. {t('footer.rights')}
+          {settings.footer_text || `© ${new Date().getFullYear()} An Voyages. ${t('footer.rights')}`}
         </div>
       </div>
     </footer>

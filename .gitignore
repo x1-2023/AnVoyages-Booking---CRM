@@ -11,6 +11,25 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+!.env.example
+
+# Local databases, uploads, backups, and QA artifacts
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+*.zip
+*.tsbuildinfo
+backend/uploads/
+backend/prisma/*.db*
+backend/prisma/seed.d.ts
+backend/prisma/seed.js
+backend/prisma/seed.js.map
+qa-screenshots/
+.tmp-*/
+.claude/
 
 # Editor directories and files
 .vscode/*

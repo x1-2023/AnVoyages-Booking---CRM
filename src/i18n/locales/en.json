@@ -1,52 +1,168 @@
 {
+  "seo": {
+    "home": {
+      "title": "An Voyages | Northern Vietnam island tours, cruises, and beach stays",
+      "description": "Book tours, packages, cruises, hotels, and travel services in Ha Long, Cat Ba, Co To, and Quan Lan.",
+      "keywords": "An Voyages, Ha Long tours, Ha Long cruises, Cat Ba travel, Northern Vietnam beach packages"
+    },
+    "properties": {
+      "title": "Tours, packages, and Northern Vietnam coastal travel services | An Voyages",
+      "description": "Find tours, packages, cruises, hotels, car rentals, and travel services in Ha Long, Cat Ba, Co To, and Quan Lan.",
+      "keywords": "Ha Long tours, Cat Ba tours, Ha Long cruises, Northern Vietnam travel packages, travel car rental",
+      "collection_name": "Tours, packages, and Northern Vietnam coastal travel services"
+    },
+    "blog": {
+      "title": "Northern Vietnam coastal travel blog | An Voyages",
+      "description": "Travel guides for Ha Long, Cat Ba, Co To, and Quan Lan: itineraries, cruise tips, hotels, and suitable packages.",
+      "keywords": "Northern Vietnam travel, Ha Long, Cat Ba, Co To, Quan Lan, island tours"
+    },
+    "destinations": {
+      "title": "Northern Vietnam island and beach destinations | An Voyages",
+      "description": "Explore Ha Long, Cat Ba, Co To, and Quan Lan routes, then choose suitable tours, cruises, hotels, or packages.",
+      "keywords": "Northern Vietnam destinations, Ha Long travel, Cat Ba travel, Co To, Quan Lan, An Voyages",
+      "collection_name": "Northern Vietnam island and beach destinations"
+    },
+    "destination_detail": {
+      "title": "{{name}} travel: tours, packages, hotels | An Voyages",
+      "description": "Explore tours, packages, cruises, hotels, and travel services in {{name}}.",
+      "keywords": "{{name}}, {{name}} tours, {{name}} travel, An Voyages"
+    },
+    "property_detail": {
+      "description": "View information, pricing, and send a booking request for {{name}} in {{location}}."
+    }
+  },
   "nav": {
     "home": "Home",
     "destinations": "Destinations",
-    "properties": "Properties",
+    "properties": "Tours",
     "blog": "Blog",
     "contact": "Contact"
   },
+  "preferences": {
+    "title": "Choose your experience",
+    "description": "Select the language and currency you want to use on An Voyages.",
+    "language": "Language",
+    "currency": "Currency",
+    "currency_note": "Prices are stored in VND and converted for display using approximate rates. Final payment is reconciled in VND.",
+    "save": "Continue"
+  },
   "hero": {
-    "title": "Discover Your Perfect Getaway",
-    "subtitle": "Explore stunning destinations and book unique accommodations for unforgettable experiences",
-    "search_placeholder": "Where do you want to go?",
-    "check_in": "Check-in",
-    "check_out": "Check-out",
+    "eyebrow": "Ha Long, Cat Ba, Co To, Quan Lan",
+    "title": "Book Northern Vietnam island tours, cruises, and beach stays",
+    "subtitle": "Tell us your travel date and group size. We will suggest the right cruise, hotel, or package for your budget.",
+    "summary": "Fast local consultation, clear package pricing, and real options for families, couples, friends, and company trips.",
+    "search_placeholder": "Where would you like to go?",
+    "search_input_placeholder": "Ha Long, Cat Ba, Co To, Quan Lan...",
+    "quick_plan_title": "Find a suitable trip",
+    "quick_plan_subtitle": "Choose a destination, travel dates, and guests. We will show available tours and packages.",
+    "check_in": "Start date",
+    "check_out": "End date",
+    "date_placeholder": "Choose date",
     "guests": "Guests",
     "adults": "Adults",
     "children": "Children",
-    "search": "Search"
+    "search": "View available trips",
+    "search_button": "View available trips",
+    "primary_cta": "View tours and packages",
+    "secondary_cta": "Get travel advice",
+    "quick_destinations": {
+      "ha_long": "Ha Long",
+      "cat_ba": "Cat Ba",
+      "co_to": "Co To",
+      "quan_lan": "Quan Lan"
+    }
   },
   "destinations": {
-    "title": "Popular Destinations",
-    "subtitle": "Explore trending locations loved by travelers worldwide",
-    "properties": "properties"
+    "title": "Popular beach and island routes",
+    "subtitle": "Choose from Ha Long, Cat Ba, Co To, and Quan Lan. Each route can be adjusted for family trips, couples, groups, or company outings.",
+    "properties": "trips",
+    "browse_all": "View all destinations",
+    "loading": "Loading destinations...",
+    "empty": "No destinations are available yet.",
+    "load_error": "Could not load destinations",
+    "page_title": "Choose a destination for your trip",
+    "page_subtitle": "Quickly browse island and beach routes with available tours, cruises, hotels, and packages.",
+    "not_found": "Destination not found.",
+    "no_products": "No travel products are available for this destination yet."
   },
   "properties": {
-    "title": "Featured Properties",
-    "subtitle": "Handpicked accommodations for your perfect stay",
+    "title": "Recommended tours and packages",
+    "subtitle": "Cruises, hotels, island tours, and package trips with pricing that is easy to compare.",
     "per_night": "/ night",
     "view_details": "View Details",
-    "book_now": "Book Now"
+    "book_now": "Book Now",
+    "browse_all": "View all tours",
+    "loading": "Loading travel products...",
+    "empty": "No travel products are available yet.",
+    "load_error": "Could not load travel products",
+    "featured": "Featured",
+    "price_from": "From",
+    "route_badge": "Tours, cruises, packages",
+    "clear_pricing_badge": "Easy-to-compare pricing",
+    "result_count": "{{count}} travel product",
+    "result_count_plural": "{{count}} travel products",
+    "filter_hint": "Quickly filter by destination, trip type, budget, and included services.",
+    "no_results_title": "No matching results",
+    "no_results_description": "Try removing some filters or searching by another destination."
+  },
+  "homepage": {
+    "trust_title": "Why book with An Voyages",
+    "trust_subtitle": "Clear advice, suitable packages, and quick support before you pay a deposit.",
+    "load_error": "Could not load homepage data",
+    "cta_title": "Start planning with An Voyages",
+    "cta_subtitle": "Get quick advice for coastal routes that match your budget, group size, and real availability.",
+    "workflow": {
+      "step_label": "Step {{step}}",
+      "step_1": {
+        "title": "Send your request",
+        "description": "Choose destination, travel dates, group size, and expected budget."
+      },
+      "step_2": {
+        "title": "Receive suitable options",
+        "description": "An Voyages filters tours, cruises, hotels, or packages that match your needs."
+      },
+      "step_3": {
+        "title": "Hold your spot clearly",
+        "description": "Confirm itinerary, receive a booking code, then choose consultation or deposit."
+      }
+    },
+    "trust_items": {
+      "inventory": {
+        "title": "Real options",
+        "description": "We suggest trips that match your dates, group size, and budget."
+      },
+      "pricing": {
+        "title": "Clear package pricing",
+        "description": "See what is included before confirming your booking."
+      },
+      "support": {
+        "title": "Quick consultation",
+        "description": "Get advice by WhatsApp or email before placing a deposit."
+      },
+      "routes": {
+        "title": "Northern island focus",
+        "description": "Local knowledge for Ha Long, Cat Ba, Co To, and Quan Lan."
+      }
+    }
   },
   "features": {
-    "title": "Why Choose Us",
-    "subtitle": "Experience the difference with our premium travel services",
+    "title": "A simpler way to plan your trip",
+    "subtitle": "Pick the route, share your needs, and receive a package that fits your travel style.",
     "best_price": {
-      "title": "Best Price Guarantee",
-      "description": "We guarantee the lowest prices on all bookings"
+      "title": "Packages for your budget",
+      "description": "Compare cruise, hotel, transport, and tour options in one place."
     },
     "secure": {
-      "title": "Secure Booking",
-      "description": "Your payments and data are always protected"
+      "title": "Checked information",
+      "description": "We help verify schedule, room type, pickup point, and inclusions."
     },
     "support": {
-      "title": "24/7 Support",
-      "description": "Our team is here to help you anytime"
+      "title": "Support before departure",
+      "description": "Receive reminders and trip details before your travel date."
     },
     "verified": {
-      "title": "Verified Properties",
-      "description": "All listings are verified for quality"
+      "title": "Selected local routes",
+      "description": "Focused on destinations that are practical for short trips from Hanoi."
     }
   },
   "blog": {
@@ -70,7 +186,18 @@
     "post3_title": "Why Santorini Should Be Your Next Destination",
     "post3_excerpt": "From stunning sunsets to ancient ruins, explore what makes this Greek island a bucket-list destination.",
     "post4_title": "Exploring Vietnam's Rich Cultural Heritage",
-    "post4_excerpt": "Dive into the fascinating traditions, cuisine, and history of this Southeast Asian treasure."
+    "post4_excerpt": "Dive into the fascinating traditions, cuisine, and history of this Southeast Asian treasure.",
+    "all_categories": "All categories ({{count}})",
+    "loading": "Loading articles...",
+    "no_results_title": "No matching articles",
+    "no_results_hint": "Try changing the keyword or selecting another category.",
+    "featured": "Featured",
+    "view_post": "View article",
+    "unpublished": "Unpublished",
+    "read_time": "{{count}} min read",
+    "back_to_blog": "Back to blog",
+    "post_not_found_title": "Article not found",
+    "post_not_found_hint": "This article may have been removed or not published yet."
   },
   "contact": {
     "title": "Get In Touch",
@@ -117,10 +244,50 @@
     "reviews": "Reviews",
     "similar": "Similar Properties",
     "per_night": "per night",
+    "price_label": "starting price",
     "rating": "rating",
     "guests": "guests",
+    "capacity": "Capacity",
     "bedrooms": "bedrooms",
-    "bathrooms": "bathrooms"
+    "bathrooms": "bathrooms",
+    "duration_days_short": "{{count}}D",
+    "flexible_duration": "Flexible",
+    "load_error": "Could not load travel product details",
+    "loading_detail": "Loading travel product details...",
+    "not_found": "Travel product not found.",
+    "previous_image": "Previous image",
+    "next_image": "Next image",
+    "share": "Share",
+    "save_favorite": "Save favorite",
+    "image_counter": "{{current}}/{{total}} photos",
+    "view_image_number": "View image {{number}}",
+    "booking_flow_label": "Flow",
+    "confirm_first": "Confirm first",
+    "consult_or_deposit": "Advice or deposit",
+    "booking_process_title": "Booking process",
+    "duration": "Duration",
+    "nights_count": "{{count}} night",
+    "nights_count_plural": "{{count}} nights",
+    "process": {
+      "step_1": {
+        "title": "Choose dates",
+        "description": "Enter dates, guest count, and contact information."
+      },
+      "step_2": {
+        "title": "Choose how to hold",
+        "description": "Request advice or hold your spot with an online deposit."
+      },
+      "step_3": {
+        "title": "Confirm",
+        "description": "Our team checks availability and sends the next instructions."
+      }
+    }
+  },
+  "property_types": {
+    "hotel": "Hotel",
+    "homestay": "Homestay",
+    "tour": "Tour",
+    "cruise": "Cruise"
   },
   "booking": {
     "title": "Book Your Stay",
@@ -129,12 +296,102 @@
     "email": "Email Address",
     "check_in": "Check-in Date",
     "check_out": "Check-out Date",
+    "end_date": "End date",
+    "date_placeholder": "Choose date",
     "guests": "Number of Guests",
     "notes": "Additional Notes",
     "notes_placeholder": "Any special requests or requirements...",
     "submit": "Send Booking Request",
+    "submitting": "Sending...",
+    "cta_deposit": "Hold spot and get deposit instructions",
+    "cta_pay_full": "Pay in full",
     "success": "Booking request sent successfully!",
-    "total": "Total"
+    "total": "Total",
+    "intent_label": "Booking option",
+    "consultation_title": "Request travel advice",
+    "consultation_description": "Our team will contact you by WhatsApp or email to confirm itinerary, price, and availability.",
+    "deposit_title": "Hold spot with online deposit",
+    "deposit_description": "Create a hold request. Our consultant confirms availability, then sends the suitable payment instructions.",
+    "pay_full_title": "Pay in full",
+    "deposit_percent_title": "Deposit amount",
+    "deposit_slider_help": "Drag to choose from 10% to 100% of the booking value.",
+    "deposit_amount_label": "Amount to pay",
+    "remaining_after_label": "Remaining balance",
+    "payment_link_note": "A payment link or QR code will be sent after our consultant confirms availability and itinerary.",
+    "discount_label": "Promo code if available",
+    "discount_placeholder": "Example: SUMMER10",
+    "discount_hint": "Our consultant will verify the promo code before confirming the final price.",
+    "after_submit_title": "After submitting",
+    "after_submit_note": "Your booking is recorded immediately. If you choose a deposit, our consultant will confirm availability and send payment instructions for the estimated amount of {{amount}}.",
+    "invalid_dates": "The return date must be after the start date",
+    "no_dates_selected": "No dates selected",
+    "estimated_total": "Estimated total",
+    "choose_dates_for_total": "Choose dates to see the estimated total",
+    "mobile_consult": "Advice",
+    "mobile_hold": "Hold",
+    "note_selected_payment": "Customer selected {{percent}}% payment ({{amount}}).",
+    "note_selected_consultation": "Customer selected consultation first.",
+    "note_discount_code": "Customer entered promo code: {{code}} (CRM verification required).",
+    "payment_session_created": "Payment session created",
+    "payment_session_created_description": "Booking {{code}} has been created. Please complete payment in the next step.",
+    "hold_created": "Hold request created",
+    "hold_created_description": "Our consultant will send payment instructions after confirming availability.",
+    "consultation_sent_description": "Consultation request for {{name}} has been sent.",
+    "submit_error": "Could not send booking request"
+  },
+  "payment_result": {
+    "success": {
+      "badge": "Payment successful",
+      "title": "Thank you, your payment has been recorded",
+      "description": "Your booking is being verified by our travel team. We will contact you by WhatsApp or email to confirm the itinerary and service details.",
+      "next_steps": [
+        "Keep your phone and email available so our consultant can confirm during working hours.",
+        "Keep the booking code or payment reference ready if we need to reconcile the transaction.",
+        "Do not pay again if your account has already been charged."
+      ]
+    },
+    "error": {
+      "badge": "Payment failed",
+      "title": "The transaction was not completed",
+      "description": "SePay has not confirmed this payment. You can try again or send the details to our team by WhatsApp or email for support.",
+      "next_steps": [
+        "Check your network connection, account balance, and transaction limit.",
+        "If your account was charged, keep the receipt or transaction reference.",
+        "Contact our team before repeating a high-value payment."
+      ]
+    },
+    "cancel": {
+      "badge": "Payment cancelled",
+      "title": "You left the payment step",
+      "description": "This booking has not been confirmed by online payment. If you still want to hold the spot, return to the trip page or contact our team by WhatsApp or email.",
+      "next_steps": [
+        "You can choose the trip again and create a new request when you are ready.",
+        "Our team can still help check availability and payment options.",
+        "No new payment was recorded from this cancelled attempt."
+      ]
+    },
+    "next_steps_title": "Next steps",
+    "reconciliation_title": "Payment reference",
+    "booking_code": "Booking code",
+    "payment_reference": "Payment reference",
+    "missing_callback": "Not included in callback",
+    "support_note": "If you need support, send your booking code or receipt by WhatsApp or email so our team can check faster.",
+    "home": "Back to home",
+    "retry": "Try booking again",
+    "browse": "View trips",
+    "contact_support": "Contact support",
+    "email_support": "Email us",
+    "email_subject": "Support request for booking {{bookingCode}}",
+    "email_body": "Hello An Voyages,\n\nI need help checking this payment.\nBooking code: {{bookingCode}}\nPayment reference: {{paymentReference}}\n\nThank you."
+  },
+  "payment_checkout": {
+    "secure_badge": "Secure payment via SePay",
+    "title": "Complete payment for booking {{bookingCode}}",
+    "amount_due": "Amount due",
+    "open_full_page": "Open payment page",
+    "missing_title": "Payment session not found",
+    "missing_description": "This payment session exists only in this browser after a booking is created. Please go back to the trip and create a new payment request.",
+    "embed_fallback": "If the payment frame does not appear because of SePay security policy, use Open payment page."
   },
   "filter": {
     "title": "Filters",
@@ -143,12 +400,16 @@
     "amenities": "Amenities",
     "rating": "Rating",
     "apply": "Apply Filters",
-    "clear": "Clear All"
+    "clear": "Clear All",
+    "all": "All",
+    "selected_count": "{{count}} selected"
   },
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong",
+    "success": "Success",
     "retry": "Try Again",
+    "retry_later": "Please try again later",
     "back": "Back",
     "next": "Next",
     "previous": "Previous"

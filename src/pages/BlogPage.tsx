@@ -1,232 +1,241 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
-import { Calendar, User, ArrowRight, Search } from "lucide-react";
-import { Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useMemo, useState } from 'react';
+import { Calendar, Search, User, Clock, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { blogService, BlogCategory, BlogPost } from '@/services/blog.service';
+import { setJsonLd, setSeoMeta } from '@/lib/seo';
 
-import destinationBali from "@/assets/destination-bali.jpg";
-import destinationTokyo from "@/assets/destination-tokyo.jpg";
-import destinationSantorini from "@/assets/destination-santorini.jpg";
-import destinationHalong from "@/assets/destination-halong.jpg";
+const fallbackImage =
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80';
 
-const BlogPage = () => {
-  const { t } = useTranslation();
-  const [searchQuery, setSearchQuery] = useState("");
+function formatDate(value: string | undefined, locale: string, fallback: string) {
+  if (!value) return fallback;
+  return new Date(value).toLocaleDateString(locale);
+}
 
-  const blogPosts = [
-    {
-      id: 1,
-      title: t("blog.post1_title"),
-      excerpt: t("blog.post1_excerpt"),
-      image: destinationBali,
-      category: t("blog.category_tips"),
-      author: "Sarah Johnson",
-      date: "2024-12-15",
-      readTime: "5 min",
-    },
-    {
-      id: 2,
-      title: t("blog.post2_title"),
-      excerpt: t("blog.post2_excerpt"),
-      image: destinationTokyo,
-      category: t("blog.category_guides"),
-      author: "Mike Chen",
-      date: "2024-12-10",
-      readTime: "8 min",
-    },
-    {
-      id: 3,
-      title: t("blog.post3_title"),
-      excerpt: t("blog.post3_excerpt"),
-      image: destinationSantorini,
-      category: t("blog.category_destinations"),
-      author: "Emma Wilson",
-      date: "2024-12-05",
-      readTime: "6 min",
-    },
-    {
-      id: 4,
-      title: t("blog.post4_title"),
-      excerpt: t("blog.post4_excerpt"),
-      image: destinationHalong,
-      category: t("blog.category_culture"),
-      author: "David Nguyen",
-      date: "2024-11-28",
-      readTime: "7 min",
-    },
-  ];
+export default function BlogPage() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language.startsWith('vi') ? 'vi-VN' : 'en-US';
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [categories, setCategories] = useState<BlogCategory[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [loading, setLoading] = useState(true);
 
-  const categories = [
-    { name: t("blog.category_all"), count: 24 },
-    { name: t("blog.category_tips"), count: 8 },
-    { name: t("blog.category_guides"), count: 6 },
-    { name: t("blog.category_destinations"), count: 5 },
-    { name: t("blog.category_culture"), count: 5 },
-  ];
+  useEffect(() => {
+    setSeoMeta({
+      title: t('seo.blog.title'),
+      description: t('seo.blog.description'),
+      keywords: t('seo.blog.keywords'),
+      canonicalUrl: `${window.location.origin}/blog`,
+    });
+    setJsonLd('blog', {
+      '@context': 'https://schema.org',
+      '@type': 'Blog',
+      name: t('seo.blog.title'),
+      url: `${window.location.origin}/blog`,
+      publisher: { '@type': 'Organization', name: 'An Voyages' },
+    });
+  }, [t]);
 
-  const filteredPosts = blogPosts.filter(
-    (post) =>
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [postData, categoryData] = await Promise.all([
+          blogService.getPublished({
+            q: searchQuery || undefined,
+            category: selectedCategory !== 'all' ? selectedCategory : undefined,
+            lang: i18n.language,
+          }),
+          blogService.getCategories(i18n.language),
+        ]);
+        setPosts(postData);
+        setCategories(categoryData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timer = window.setTimeout(loadData, 250);
+    return () => window.clearTimeout(timer);
+  }, [i18n.language, searchQuery, selectedCategory]);
+
+  const featuredPost = useMemo(() => posts.find((post) => post.featured) || posts[0], [posts]);
+  const regularPosts = featuredPost ? posts.filter((post) => post.id !== featuredPost.id) : posts;
+  const totalCount = categories.reduce((sum, category) => sum + category.count, 0);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative pt-24 pb-16 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center max-w-3xl mx-auto"
-          >
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground mb-4">
-              {t("blog.title")}
+      <section className="pt-28 pb-12 md:pt-32 md:pb-16">
+        <div className="container-custom mx-auto px-4 md:px-8">
+          <div className="max-w-3xl">
+            <h1 className="font-display text-4xl font-bold leading-tight text-foreground md:text-5xl">
+              {t('blog.title')}
             </h1>
-            <p className="text-lg text-muted-foreground mb-8">
-              {t("blog.subtitle")}
+            <p className="mt-4 text-lg text-muted-foreground">
+              {t('blog.subtitle')}
             </p>
-            
-            {/* Search */}
-            <div className="relative max-w-md mx-auto">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-[minmax(0,1fr)_240px]">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t("blog.search_placeholder")}
-                className="pl-12 h-12 rounded-full"
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder={t('blog.search_placeholder')}
+                className="h-12 pl-12"
               />
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Blog Content */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-4 gap-8">
-            {/* Sidebar */}
-            <motion.aside
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="lg:col-span-1 space-y-8"
+            <select
+              value={selectedCategory}
+              onChange={(event) => setSelectedCategory(event.target.value)}
+              className="h-12 rounded-md border bg-background px-3 text-sm"
             >
-              {/* Categories */}
-              <div className="bg-card rounded-2xl p-6 border border-border">
-                <h3 className="text-lg font-display font-bold text-foreground mb-4">
-                  {t("blog.categories")}
-                </h3>
-                <ul className="space-y-3">
-                  {categories.map((category, index) => (
-                    <li key={index}>
-                      <button className="flex items-center justify-between w-full text-left text-muted-foreground hover:text-primary transition-colors">
-                        <span>{category.name}</span>
-                        <Badge variant="secondary" className="text-xs">
-                          {category.count}
-                        </Badge>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Popular Tags */}
-              <div className="bg-card rounded-2xl p-6 border border-border">
-                <h3 className="text-lg font-display font-bold text-foreground mb-4">
-                  {t("blog.popular_tags")}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {["Travel", "Beach", "Adventure", "Food", "Culture", "Tips"].map(
-                    (tag) => (
-                      <Badge
-                        key={tag}
-                        variant="outline"
-                        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                      >
-                        {tag}
-                      </Badge>
-                    )
-                  )}
-                </div>
-              </div>
-            </motion.aside>
-
-            {/* Blog Posts Grid */}
-            <div className="lg:col-span-3">
-              <div className="grid md:grid-cols-2 gap-6">
-                {filteredPosts.map((post, index) => (
-                  <motion.article
-                    key={post.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 * index }}
-                    className="group bg-card rounded-2xl overflow-hidden border border-border hover:shadow-xl transition-all duration-300"
-                  >
-                    <div className="relative h-48 overflow-hidden">
-                      <img
-                        src={post.image}
-                        alt={post.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <Badge className="absolute top-4 left-4">
-                        {post.category}
-                      </Badge>
-                    </div>
-                    <div className="p-6">
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {new Date(post.date).toLocaleDateString()}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <User className="w-4 h-4" />
-                          {post.author}
-                        </span>
-                      </div>
-                      <h2 className="text-xl font-display font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                        {post.title}
-                      </h2>
-                      <p className="text-muted-foreground mb-4 line-clamp-2">
-                        {post.excerpt}
-                      </p>
-                      <Button variant="ghost" className="group/btn p-0 h-auto">
-                        {t("blog.read_more")}
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                      </Button>
-                    </div>
-                  </motion.article>
-                ))}
-              </div>
-
-              {filteredPosts.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">{t("blog.no_results")}</p>
-                </div>
-              )}
-
-              {/* Load More */}
-              <div className="text-center mt-12">
-                <Button variant="outline" size="lg">
-                  {t("blog.load_more")}
-                </Button>
-              </div>
-            </div>
+              <option value="all">{t('blog.all_categories', { count: totalCount })}</option>
+              {categories.map((category) => (
+                <option key={category.name} value={category.name}>
+                  {category.name} ({category.count})
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </section>
 
+      <main className="pb-20">
+        <div className="container-custom mx-auto px-4 md:px-8">
+          {loading ? (
+            <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">
+              {t('blog.loading')}
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="rounded-2xl border bg-card p-10 text-center">
+              <h2 className="font-display text-2xl font-bold text-foreground">{t('blog.no_results_title')}</h2>
+              <p className="mt-2 text-muted-foreground">{t('blog.no_results_hint')}</p>
+            </div>
+          ) : (
+            <div className="space-y-10">
+              {featuredPost && (
+                <article className="grid overflow-hidden rounded-2xl border bg-card shadow-sm md:grid-cols-[1.05fr_0.95fr]">
+                  <Link to={`/blog/${featuredPost.slug}`} className="block min-h-[280px] overflow-hidden">
+                    <img
+                      src={featuredPost.coverImage || fallbackImage}
+                      alt={featuredPost.title}
+                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                  </Link>
+                  <div className="flex flex-col justify-center p-6 md:p-8">
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                      {featuredPost.category && <Badge>{featuredPost.category}</Badge>}
+                      {featuredPost.featured && <Badge variant="secondary">{t('blog.featured')}</Badge>}
+                    </div>
+                    <Link to={`/blog/${featuredPost.slug}`}>
+                      <h2 className="font-display text-3xl font-bold leading-tight text-foreground hover:text-primary">
+                        {featuredPost.title}
+                      </h2>
+                    </Link>
+                    {featuredPost.excerpt && (
+                      <p className="mt-4 text-muted-foreground">{featuredPost.excerpt}</p>
+                    )}
+                    <PostMeta
+                      post={featuredPost}
+                      locale={locale}
+                      unpublishedLabel={t('blog.unpublished')}
+                      readTimeLabel={t('blog.read_time')}
+                      className="mt-5"
+                    />
+                    <Button asChild variant="hero" className="mt-6 w-fit">
+                      <Link to={`/blog/${featuredPost.slug}`}>
+                        {t('blog.view_post')}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </article>
+              )}
+
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {regularPosts.map((post) => (
+                  <article key={post.id} className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+                    <Link to={`/blog/${post.slug}`} className="block h-52 overflow-hidden">
+                      <img
+                        src={post.coverImage || fallbackImage}
+                        alt={post.title}
+                        className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    </Link>
+                    <div className="p-5">
+                      {post.category && <Badge variant="secondary">{post.category}</Badge>}
+                      <Link to={`/blog/${post.slug}`}>
+                        <h2 className="mt-3 line-clamp-2 font-display text-xl font-bold text-foreground hover:text-primary">
+                          {post.title}
+                        </h2>
+                      </Link>
+                      {post.excerpt && (
+                        <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{post.excerpt}</p>
+                      )}
+                      <PostMeta
+                        post={post}
+                        locale={locale}
+                        unpublishedLabel={t('blog.unpublished')}
+                        readTimeLabel={t('blog.read_time')}
+                        className="mt-4"
+                        compact
+                      />
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
       <Footer />
     </div>
   );
-};
+}
 
-export default BlogPage;
+function PostMeta({
+  post,
+  locale,
+  unpublishedLabel,
+  readTimeLabel,
+  className = '',
+  compact = false,
+}: {
+  post: BlogPost;
+  locale: string;
+  unpublishedLabel: string;
+  readTimeLabel: string;
+  className?: string;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`flex flex-wrap items-center gap-3 text-sm text-muted-foreground ${className}`}>
+      <span className="flex items-center gap-1.5">
+        <Calendar className="h-4 w-4" />
+        {formatDate(post.publishedAt, locale, unpublishedLabel)}
+      </span>
+      {!compact && (
+        <span className="flex items-center gap-1.5">
+          <User className="h-4 w-4" />
+          {post.authorName}
+        </span>
+      )}
+      <span className="flex items-center gap-1.5">
+        <Clock className="h-4 w-4" />
+        {readTimeLabel.replace('{{count}}', String(post.readingMinutes))}
+      </span>
+    </div>
+  );
+}

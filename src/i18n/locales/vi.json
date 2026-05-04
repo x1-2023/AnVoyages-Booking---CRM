@@ -1,156 +1,415 @@
 {
+  "seo": {
+    "home": {
+      "title": "An Voyages | Đặt tour đảo, du thuyền và kỳ nghỉ biển miền Bắc",
+      "description": "Đặt tour, combo, du thuyền, khách sạn và dịch vụ du lịch tại Hạ Long, Cát Bà, Cô Tô, Quan Lạn.",
+      "keywords": "An Voyages, tour Hạ Long, du thuyền Hạ Long, du lịch Cát Bà, combo du lịch miền Bắc"
+    },
+    "properties": {
+      "title": "Tour, combo và dịch vụ du lịch biển miền Bắc | An Voyages",
+      "description": "Tìm tour, combo, du thuyền, khách sạn, thuê xe và dịch vụ du lịch tại Hạ Long, Cát Bà, Cô Tô, Quan Lạn.",
+      "keywords": "tour Hạ Long, tour Cát Bà, du thuyền Hạ Long, combo du lịch miền Bắc, thuê xe du lịch",
+      "collection_name": "Tour, combo và dịch vụ du lịch biển miền Bắc"
+    },
+    "blog": {
+      "title": "Blog du lịch biển miền Bắc | An Voyages",
+      "description": "Cẩm nang du lịch Hạ Long, Cát Bà, Cô Tô, Quan Lạn: lịch trình, kinh nghiệm đặt tour, du thuyền, khách sạn và combo phù hợp.",
+      "keywords": "du lịch miền Bắc, Hạ Long, Cát Bà, Cô Tô, Quan Lạn, tour biển đảo"
+    },
+    "destinations": {
+      "title": "Điểm đến biển đảo miền Bắc | An Voyages",
+      "description": "Khám phá các tuyến Hạ Long, Cát Bà, Cô Tô, Quan Lạn và chọn tour, du thuyền, khách sạn hoặc combo phù hợp.",
+      "keywords": "điểm đến miền Bắc, du lịch Hạ Long, du lịch Cát Bà, Cô Tô, Quan Lạn, An Voyages",
+      "collection_name": "Điểm đến biển đảo miền Bắc"
+    },
+    "destination_detail": {
+      "title": "Du lịch {{name}}: tour, combo, khách sạn | An Voyages",
+      "description": "Khám phá tour, combo, du thuyền, khách sạn và dịch vụ du lịch tại {{name}}.",
+      "keywords": "{{name}}, tour {{name}}, du lịch {{name}}, An Voyages"
+    },
+    "property_detail": {
+      "description": "Xem thông tin, giá và gửi yêu cầu đặt {{name}} tại {{location}}."
+    }
+  },
   "nav": {
     "home": "Trang chủ",
     "destinations": "Điểm đến",
-    "properties": "Chỗ ở",
-    "blog": "Blog",
+    "properties": "Tour",
+    "blog": "Cẩm nang",
     "contact": "Liên hệ"
   },
+  "preferences": {
+    "title": "Chọn trải nghiệm của bạn",
+    "description": "Chọn ngôn ngữ và tiền tệ muốn dùng trên An Voyages.",
+    "language": "Ngôn ngữ",
+    "currency": "Tiền tệ",
+    "currency_note": "Giá được lưu bằng VND và quy đổi gần đúng để hiển thị. Thanh toán cuối cùng vẫn đối soát bằng VND.",
+    "save": "Tiếp tục"
+  },
   "hero": {
-    "title": "Khám Phá Kỳ Nghỉ Hoàn Hảo",
-    "subtitle": "Khám phá những điểm đến tuyệt vời và đặt phòng độc đáo cho những trải nghiệm khó quên",
+    "eyebrow": "Hạ Long, Cát Bà, Cô Tô, Quan Lạn",
+    "title": "Đặt tour đảo, du thuyền và kỳ nghỉ biển miền Bắc",
+    "subtitle": "Chọn ngày đi và số khách, An Voyages sẽ gợi ý du thuyền, khách sạn hoặc combo phù hợp với ngân sách của bạn.",
+    "summary": "Tư vấn nhanh qua điện thoại/Zalo, giá gói rõ ràng, phù hợp cho gia đình, cặp đôi, nhóm bạn và công ty.",
     "search_placeholder": "Bạn muốn đi đâu?",
-    "check_in": "Nhận phòng",
-    "check_out": "Trả phòng",
+    "search_input_placeholder": "Hạ Long, Cát Bà, Cô Tô, Quan Lạn...",
+    "quick_plan_title": "Tìm chuyến đi phù hợp",
+    "quick_plan_subtitle": "Chọn điểm đến, ngày đi và số khách để xem các tour/combo đang có.",
+    "check_in": "Ngày đi",
+    "check_out": "Ngày về",
+    "date_placeholder": "Chọn ngày",
     "guests": "Khách",
     "adults": "Người lớn",
     "children": "Trẻ em",
-    "search": "Tìm kiếm"
+    "search": "Xem chuyến đi phù hợp",
+    "search_button": "Xem chuyến đi phù hợp",
+    "primary_cta": "Xem tour và combo",
+    "secondary_cta": "Nhận tư vấn",
+    "quick_destinations": {
+      "ha_long": "Hạ Long",
+      "cat_ba": "Cát Bà",
+      "co_to": "Cô Tô",
+      "quan_lan": "Quan Lạn"
+    }
   },
   "destinations": {
-    "title": "Điểm Đến Phổ Biến",
-    "subtitle": "Khám phá các địa điểm được yêu thích bởi du khách toàn cầu",
-    "properties": "chỗ ở"
+    "title": "Các tuyến biển đảo được đặt nhiều",
+    "subtitle": "Lựa chọn Hạ Long, Cát Bà, Cô Tô hoặc Quan Lạn. Mỗi tuyến có thể điều chỉnh cho gia đình, cặp đôi, nhóm bạn hoặc đoàn công ty.",
+    "properties": "chuyến đi",
+    "browse_all": "Xem tất cả điểm đến",
+    "loading": "Đang tải điểm đến...",
+    "empty": "Chưa có điểm đến nào.",
+    "load_error": "Không thể tải điểm đến",
+    "page_title": "Chọn điểm đến cho chuyến đi",
+    "page_subtitle": "Xem nhanh các tuyến biển đảo đang có tour, du thuyền, khách sạn và combo phù hợp.",
+    "not_found": "Không tìm thấy điểm đến.",
+    "no_products": "Chưa có sản phẩm du lịch nào tại điểm đến này."
   },
   "properties": {
-    "title": "Chỗ Ở Nổi Bật",
-    "subtitle": "Những nơi lưu trú được chọn lọc cho kỳ nghỉ hoàn hảo của bạn",
+    "title": "Tour và combo gợi ý",
+    "subtitle": "Du thuyền, khách sạn, tour đảo và combo trọn gói với giá dễ so sánh.",
     "per_night": "/ đêm",
-    "view_details": "Xem Chi Tiết",
-    "book_now": "Đặt Ngay"
+    "view_details": "Xem chi tiết",
+    "book_now": "Đặt ngay",
+    "browse_all": "Xem tất cả tour",
+    "loading": "Đang tải sản phẩm du lịch...",
+    "empty": "Chưa có sản phẩm du lịch nào.",
+    "load_error": "Không thể tải sản phẩm du lịch",
+    "featured": "Nổi bật",
+    "price_from": "Từ",
+    "route_badge": "Tour, du thuyền, combo",
+    "clear_pricing_badge": "Giá gói dễ so sánh",
+    "result_count": "{{count}} sản phẩm du lịch",
+    "filter_hint": "Lọc nhanh theo điểm đến, loại tour, ngân sách và dịch vụ kèm theo.",
+    "no_results_title": "Không có kết quả phù hợp",
+    "no_results_description": "Thử bỏ bớt bộ lọc hoặc tìm bằng tên điểm đến khác."
+  },
+  "homepage": {
+    "trust_title": "Vì sao nên đặt qua An Voyages",
+    "trust_subtitle": "Tư vấn rõ ràng, gói phù hợp và hỗ trợ nhanh trước khi bạn đặt cọc.",
+    "load_error": "Không thể tải dữ liệu trang chủ",
+    "cta_title": "Bắt đầu hành trình cùng An Voyages",
+    "cta_subtitle": "Tư vấn nhanh hành trình biển phù hợp ngân sách, nhóm khách và quỹ phòng thực tế.",
+    "workflow": {
+      "step_label": "Bước {{step}}",
+      "step_1": {
+        "title": "Gửi nhu cầu",
+        "description": "Chọn điểm đến, ngày đi, số khách và ngân sách dự kiến."
+      },
+      "step_2": {
+        "title": "Nhận gợi ý phù hợp",
+        "description": "An Voyages lọc tour, du thuyền, khách sạn hoặc combo đúng nhu cầu."
+      },
+      "step_3": {
+        "title": "Giữ chỗ rõ ràng",
+        "description": "Xác nhận lịch trình, nhận mã booking và chọn tư vấn hoặc đặt cọc."
+      }
+    },
+    "trust_items": {
+      "inventory": {
+        "title": "Gợi ý đúng nhu cầu",
+        "description": "Chọn chuyến đi theo ngày, số khách, ngân sách và kiểu trải nghiệm bạn muốn."
+      },
+      "pricing": {
+        "title": "Giá gói rõ ràng",
+        "description": "Biết trước gói gồm những gì trước khi xác nhận booking."
+      },
+      "support": {
+        "title": "Tư vấn nhanh",
+        "description": "Trao đổi qua điện thoại hoặc Zalo trước khi đặt cọc."
+      },
+      "routes": {
+        "title": "Am hiểu tuyến biển miền Bắc",
+        "description": "Tập trung Hạ Long, Cát Bà, Cô Tô và Quan Lạn."
+      }
+    }
   },
   "features": {
-    "title": "Tại Sao Chọn Chúng Tôi",
-    "subtitle": "Trải nghiệm sự khác biệt với dịch vụ du lịch cao cấp",
+    "title": "Lên kế hoạch du lịch dễ hơn",
+    "subtitle": "Chọn tuyến đi, gửi nhu cầu, nhận gói phù hợp với cách bạn muốn đi.",
     "best_price": {
-      "title": "Đảm Bảo Giá Tốt Nhất",
-      "description": "Chúng tôi cam kết mức giá thấp nhất cho mọi đặt phòng"
+      "title": "Gói theo ngân sách",
+      "description": "So sánh du thuyền, khách sạn, xe và tour trong cùng một nơi."
     },
     "secure": {
-      "title": "Đặt Phòng An Toàn",
-      "description": "Thanh toán và dữ liệu của bạn luôn được bảo vệ"
+      "title": "Thông tin được kiểm tra",
+      "description": "Hỗ trợ xác nhận lịch trình, loại phòng, điểm đón và dịch vụ bao gồm."
     },
     "support": {
-      "title": "Hỗ Trợ 24/7",
-      "description": "Đội ngũ của chúng tôi luôn sẵn sàng hỗ trợ bạn"
+      "title": "Hỗ trợ trước ngày đi",
+      "description": "Nhận nhắc lịch và thông tin chuyến đi trước ngày khởi hành."
     },
     "verified": {
-      "title": "Chỗ Ở Đã Xác Minh",
-      "description": "Tất cả danh sách đều được xác minh chất lượng"
+      "title": "Tuyến đi chọn lọc",
+      "description": "Ưu tiên các điểm đến phù hợp cho chuyến ngắn ngày từ Hà Nội."
     }
   },
   "blog": {
-    "title": "Cảm Hứng Du Lịch",
-    "subtitle": "Mẹo, hướng dẫn và câu chuyện từ khắp nơi trên thế giới",
-    "read_more": "Đọc Thêm",
-    "search_placeholder": "Tìm kiếm bài viết...",
-    "categories": "Danh Mục",
-    "popular_tags": "Thẻ Phổ Biến",
-    "load_more": "Tải Thêm Bài Viết",
+    "title": "Cẩm nang du lịch",
+    "subtitle": "Kinh nghiệm, lịch trình và gợi ý ăn chơi cho các tuyến biển đảo miền Bắc",
+    "read_more": "Đọc thêm",
+    "search_placeholder": "Tìm bài viết...",
+    "categories": "Danh mục",
+    "popular_tags": "Chủ đề phổ biến",
+    "load_more": "Tải thêm bài viết",
     "no_results": "Không tìm thấy bài viết",
-    "category_all": "Tất Cả",
-    "category_tips": "Mẹo Du Lịch",
-    "category_guides": "Hướng Dẫn",
-    "category_destinations": "Điểm Đến",
-    "category_culture": "Văn Hóa",
-    "post1_title": "10 Mẹo Cần Thiết Cho Người Mới Đi Du Lịch",
-    "post1_excerpt": "Bạn đang lên kế hoạch cho chuyến đi lớn đầu tiên? Đây là những mẹo cần biết giúp hành trình của bạn suôn sẻ hơn.",
-    "post2_title": "Hướng Dẫn Khám Phá Những Điểm Ẩn Của Tokyo",
-    "post2_excerpt": "Khám phá những địa điểm bí mật và yêu thích của người địa phương mà hầu hết du khách bỏ lỡ.",
-    "post3_title": "Tại Sao Santorini Nên Là Điểm Đến Tiếp Theo Của Bạn",
-    "post3_excerpt": "Từ hoàng hôn tuyệt đẹp đến di tích cổ đại, khám phá điều gì làm cho hòn đảo Hy Lạp này trở nên đặc biệt.",
-    "post4_title": "Khám Phá Di Sản Văn Hóa Phong Phú Của Việt Nam",
-    "post4_excerpt": "Đắm chìm trong truyền thống hấp dẫn, ẩm thực và lịch sử của viên ngọc Đông Nam Á này."
+    "category_all": "Tất cả",
+    "category_tips": "Mẹo du lịch",
+    "category_guides": "Hướng dẫn",
+    "category_destinations": "Điểm đến",
+    "category_culture": "Văn hóa",
+    "post1_title": "5 điều cần biết trước khi đi Cát Bà lần đầu",
+    "post1_excerpt": "Gợi ý thời điểm đi, cách di chuyển, lịch trình và các lưu ý để chuyến Cát Bà dễ chịu hơn.",
+    "post2_title": "Kinh nghiệm chọn du thuyền Hạ Long phù hợp ngân sách",
+    "post2_excerpt": "So sánh day cruise, overnight cruise và các tiêu chí quan trọng khi chọn du thuyền.",
+    "post3_title": "Cô Tô phù hợp với ai và nên đi mùa nào?",
+    "post3_excerpt": "Những lưu ý về thời tiết, tàu cao tốc, lịch trình và chi phí khi đi Cô Tô.",
+    "post4_title": "Quan Lạn cho nhóm bạn và gia đình cuối tuần",
+    "post4_excerpt": "Gợi ý combo nghỉ dưỡng, lịch trình 2 ngày 1 đêm và các điểm nên ghé tại Quan Lạn.",
+    "all_categories": "Tất cả chuyên mục ({{count}})",
+    "loading": "Đang tải bài viết...",
+    "no_results_title": "Chưa có bài viết phù hợp",
+    "no_results_hint": "Thử đổi từ khóa hoặc chọn lại chuyên mục.",
+    "featured": "Nổi bật",
+    "view_post": "Xem bài viết",
+    "unpublished": "Chưa xuất bản",
+    "read_time": "{{count}} phút đọc",
+    "back_to_blog": "Quay lại blog",
+    "post_not_found_title": "Không tìm thấy bài viết",
+    "post_not_found_hint": "Bài viết có thể đã bị gỡ hoặc chưa được xuất bản."
   },
   "contact": {
-    "title": "Liên Hệ",
-    "subtitle": "Có câu hỏi? Chúng tôi rất muốn nghe từ bạn. Gửi tin nhắn và chúng tôi sẽ phản hồi sớm nhất có thể.",
-    "form_title": "Gửi Tin Nhắn",
-    "name": "Họ và Tên",
+    "title": "Liên hệ tư vấn",
+    "subtitle": "Gửi nhu cầu chuyến đi, An Voyages sẽ phản hồi sớm với gợi ý tour/combo phù hợp.",
+    "form_title": "Gửi yêu cầu tư vấn",
+    "name": "Họ và tên",
     "name_placeholder": "Nhập tên của bạn",
     "email_label": "Email",
     "email_placeholder": "Nhập email của bạn",
-    "subject": "Tiêu Đề",
-    "subject_placeholder": "Chúng tôi có thể giúp gì?",
-    "message": "Tin Nhắn",
-    "message_placeholder": "Viết tin nhắn của bạn ở đây...",
-    "send": "Gửi Tin Nhắn",
-    "info_title": "Thông Tin Liên Hệ",
-    "address": "Địa Chỉ",
-    "phone": "Điện Thoại",
+    "subject": "Nhu cầu chuyến đi",
+    "subject_placeholder": "Bạn muốn đi đâu, mấy người, ngày nào?",
+    "message": "Tin nhắn",
+    "message_placeholder": "Viết nhu cầu hoặc câu hỏi của bạn...",
+    "send": "Gửi yêu cầu",
+    "info_title": "Thông tin liên hệ",
+    "address": "Địa chỉ",
+    "phone": "Điện thoại",
     "email": "Email",
-    "hours": "Giờ Làm Việc",
-    "hours_detail": "Thứ 2 - Thứ 6: 9:00 - 18:00",
-    "success_title": "Đã Gửi Tin Nhắn!",
-    "success_message": "Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm."
+    "hours": "Giờ tư vấn",
+    "hours_detail": "Thứ 2 - Chủ nhật: 8:00 - 21:00",
+    "success_title": "Đã gửi yêu cầu!",
+    "success_message": "Cảm ơn bạn đã liên hệ. An Voyages sẽ phản hồi sớm."
   },
   "footer": {
-    "description": "Đối tác tin cậy của bạn trong việc tìm kiếm chỗ ở hoàn hảo trên toàn thế giới. Đặt phòng tự tin và khám phá vui vẻ.",
-    "quick_links": "Liên Kết Nhanh",
-    "support": "Hỗ Trợ",
-    "help_center": "Trung Tâm Trợ Giúp",
-    "cancellation": "Chính Sách Hủy",
-    "faq": "Câu Hỏi Thường Gặp",
-    "terms": "Điều Khoản & Điều Kiện",
-    "contact": "Liên Hệ",
-    "newsletter": "Bản Tin",
-    "newsletter_text": "Đăng ký để nhận ưu đãi đặc biệt và mẹo du lịch",
-    "subscribe": "Đăng Ký",
+    "description": "An Voyages tư vấn tour đảo, du thuyền và kỳ nghỉ biển miền Bắc cho gia đình, nhóm bạn và công ty.",
+    "quick_links": "Liên kết nhanh",
+    "support": "Hỗ trợ",
+    "help_center": "Trung tâm hỗ trợ",
+    "cancellation": "Chính sách hủy",
+    "faq": "Câu hỏi thường gặp",
+    "terms": "Điều khoản & điều kiện",
+    "contact": "Liên hệ",
+    "newsletter": "Nhận ưu đãi",
+    "newsletter_text": "Đăng ký để nhận gợi ý lịch trình và ưu đãi mới",
+    "subscribe": "Đăng ký",
     "email_placeholder": "Nhập email của bạn",
     "rights": "Bảo lưu mọi quyền."
   },
   "property": {
-    "gallery": "Thư Viện Ảnh",
-    "overview": "Tổng Quan",
-    "amenities": "Tiện Nghi",
-    "location": "Vị Trí",
-    "reviews": "Đánh Giá",
-    "similar": "Chỗ Ở Tương Tự",
+    "gallery": "Thư viện ảnh",
+    "overview": "Tổng quan",
+    "amenities": "Dịch vụ bao gồm",
+    "location": "Vị trí",
+    "reviews": "đánh giá",
+    "similar": "Tour tương tự",
     "per_night": "mỗi đêm",
+    "price_label": "giá khởi điểm",
     "rating": "đánh giá",
     "guests": "khách",
+    "capacity": "Sức chứa",
     "bedrooms": "phòng ngủ",
-    "bathrooms": "phòng tắm"
+    "bathrooms": "phòng tắm",
+    "duration_days_short": "{{count}}N",
+    "flexible_duration": "Linh hoạt",
+    "load_error": "Không thể tải chi tiết sản phẩm du lịch",
+    "loading_detail": "Đang tải chi tiết sản phẩm du lịch...",
+    "not_found": "Không tìm thấy sản phẩm du lịch.",
+    "previous_image": "Xem ảnh trước",
+    "next_image": "Xem ảnh tiếp theo",
+    "share": "Chia sẻ",
+    "save_favorite": "Lưu yêu thích",
+    "image_counter": "{{current}}/{{total}} ảnh",
+    "view_image_number": "Xem ảnh {{number}}",
+    "booking_flow_label": "Quy trình",
+    "confirm_first": "Xác nhận trước",
+    "consult_or_deposit": "Tư vấn hoặc cọc",
+    "booking_process_title": "Quy trình đặt chỗ",
+    "duration": "Thời lượng",
+    "nights_count": "{{count}} đêm",
+    "process": {
+      "step_1": {
+        "title": "Chọn ngày",
+        "description": "Nhập lịch, số khách và thông tin liên hệ."
+      },
+      "step_2": {
+        "title": "Chọn cách giữ chỗ",
+        "description": "Gửi tư vấn hoặc yêu cầu giữ chỗ bằng đặt cọc online."
+      },
+      "step_3": {
+        "title": "Xác nhận",
+        "description": "Tư vấn viên kiểm tra chỗ trống và gửi hướng dẫn tiếp theo."
+      }
+    }
+  },
+  "property_types": {
+    "hotel": "Khách sạn",
+    "homestay": "Homestay",
+    "tour": "Tour",
+    "cruise": "Du thuyền"
   },
   "booking": {
-    "title": "Đặt Phòng",
-    "full_name": "Họ và Tên",
-    "phone": "Số Điện Thoại",
-    "email": "Địa Chỉ Email",
-    "check_in": "Ngày Nhận Phòng",
-    "check_out": "Ngày Trả Phòng",
-    "guests": "Số Lượng Khách",
-    "notes": "Ghi Chú Thêm",
-    "notes_placeholder": "Yêu cầu đặc biệt hoặc yêu cầu khác...",
-    "submit": "Gửi Yêu Cầu Đặt Phòng",
-    "success": "Yêu cầu đặt phòng đã được gửi thành công!",
-    "total": "Tổng cộng"
+    "title": "Đặt tour",
+    "full_name": "Họ và tên",
+    "phone": "Số điện thoại",
+    "email": "Email",
+    "check_in": "Ngày đi",
+    "check_out": "Ngày về",
+    "end_date": "Ngày kết thúc",
+    "date_placeholder": "Chọn ngày",
+    "guests": "Số khách",
+    "notes": "Ghi chú thêm",
+    "notes_placeholder": "Nhu cầu đặc biệt, trẻ em, người lớn tuổi, xe đưa đón...",
+    "submit": "Gửi yêu cầu tư vấn",
+    "submitting": "Đang gửi...",
+    "cta_deposit": "Giữ chỗ và nhận hướng dẫn cọc",
+    "cta_pay_full": "Thanh toán toàn bộ",
+    "success": "Yêu cầu đặt tour đã được gửi thành công!",
+    "total": "Tổng cộng",
+    "intent_label": "Hình thức đặt",
+    "consultation_title": "Gửi yêu cầu tư vấn",
+    "consultation_description": "Tư vấn viên sẽ gọi lại qua điện thoại/Zalo hoặc email để xác nhận lịch trình, giá và chỗ trống.",
+    "deposit_title": "Giữ chỗ, đặt cọc online",
+    "deposit_description": "Tạo mã giữ chỗ. Tư vấn viên xác nhận chỗ trống rồi gửi hướng dẫn thanh toán phù hợp.",
+    "pay_full_title": "Thanh toán toàn bộ",
+    "deposit_percent_title": "Mức đặt cọc",
+    "deposit_slider_help": "Kéo để chọn từ 10% đến 100% tổng giá trị booking.",
+    "deposit_amount_label": "Số tiền cần thanh toán",
+    "remaining_after_label": "Còn lại sau đó",
+    "payment_link_note": "Link hoặc QR thanh toán sẽ được gửi sau khi tư vấn viên xác nhận chỗ trống và lịch trình.",
+    "discount_label": "Mã ưu đãi nếu có",
+    "discount_placeholder": "Ví dụ: SUMMER10",
+    "discount_hint": "Mã ưu đãi sẽ được tư vấn viên kiểm tra trước khi xác nhận giá cuối cùng.",
+    "after_submit_title": "Sau khi gửi form",
+    "after_submit_note": "Booking được ghi nhận ngay. Nếu chọn đặt cọc, tư vấn viên sẽ xác nhận chỗ trống và gửi hướng dẫn thanh toán dự kiến {{amount}}.",
+    "invalid_dates": "Ngày về phải sau ngày đi",
+    "no_dates_selected": "Chưa chọn ngày",
+    "estimated_total": "Tạm tính",
+    "choose_dates_for_total": "Chọn ngày để xem tổng tạm tính",
+    "mobile_consult": "Tư vấn",
+    "mobile_hold": "Giữ chỗ",
+    "note_selected_payment": "Khách chọn thanh toán {{percent}}% ({{amount}}).",
+    "note_selected_consultation": "Khách chọn gửi yêu cầu tư vấn trước.",
+    "note_discount_code": "Mã ưu đãi khách nhập: {{code}} (cần CRM xác minh).",
+    "payment_session_created": "Đã tạo phiên thanh toán",
+    "payment_session_created_description": "Booking {{code}} đã được tạo. Vui lòng hoàn tất thanh toán ở bước tiếp theo.",
+    "hold_created": "Đã tạo yêu cầu giữ chỗ",
+    "hold_created_description": "Tư vấn viên sẽ gửi hướng dẫn thanh toán sau khi xác nhận chỗ.",
+    "consultation_sent_description": "Đã gửi yêu cầu tư vấn cho {{name}}.",
+    "submit_error": "Không thể gửi yêu cầu đặt chỗ"
+  },
+  "payment_result": {
+    "success": {
+      "badge": "Thanh toán thành công",
+      "title": "Cảm ơn bạn, giao dịch đã được ghi nhận",
+      "description": "Booking của bạn đang được đội ngũ tư vấn xác nhận. Chúng tôi sẽ liên hệ lại qua điện thoại, Zalo hoặc email để chốt lịch trình và thông tin dịch vụ.",
+      "next_steps": [
+        "Giữ điện thoại và email sẵn sàng để tư vấn viên xác nhận trong giờ làm việc.",
+        "Kiểm tra lại mã booking hoặc mã giao dịch nếu cần đối soát.",
+        "Không cần chuyển khoản lại nếu tài khoản đã bị trừ tiền."
+      ]
+    },
+    "error": {
+      "badge": "Thanh toán lỗi",
+      "title": "Giao dịch chưa hoàn tất",
+      "description": "SePay chưa xác nhận được khoản thanh toán này. Bạn có thể thử lại hoặc gửi thông tin qua Zalo/email để đội ngũ tư vấn hỗ trợ kiểm tra.",
+      "next_steps": [
+        "Kiểm tra kết nối mạng, số dư và hạn mức giao dịch của tài khoản.",
+        "Nếu tài khoản đã bị trừ tiền, giữ lại biên lai hoặc mã giao dịch.",
+        "Liên hệ tư vấn viên trước khi thực hiện lại giao dịch giá trị lớn."
+      ]
+    },
+    "cancel": {
+      "badge": "Đã hủy thanh toán",
+      "title": "Bạn đã rời khỏi bước thanh toán",
+      "description": "Booking chưa được xác nhận bằng thanh toán online. Nếu bạn vẫn muốn giữ chỗ, hãy quay lại chuyến đi hoặc liên hệ tư vấn viên qua Zalo/email.",
+      "next_steps": [
+        "Bạn có thể chọn lại chuyến đi và tạo yêu cầu mới khi sẵn sàng.",
+        "Tư vấn viên vẫn có thể hỗ trợ kiểm tra chỗ trống và phương án thanh toán.",
+        "Không có khoản thanh toán mới nào được ghi nhận từ lượt hủy này."
+      ]
+    },
+    "next_steps_title": "Các bước tiếp theo",
+    "reconciliation_title": "Thông tin đối soát",
+    "booking_code": "Mã booking",
+    "payment_reference": "Mã thanh toán",
+    "missing_callback": "Chưa có trong callback",
+    "support_note": "Nếu cần hỗ trợ, hãy gửi kèm mã booking hoặc ảnh biên lai qua Zalo/email để đội ngũ kiểm tra nhanh hơn.",
+    "home": "Về trang chủ",
+    "retry": "Thử đặt lại",
+    "browse": "Xem chuyến đi",
+    "contact_support": "Liên hệ tư vấn",
+    "email_support": "Gửi email",
+    "email_subject": "Yêu cầu hỗ trợ booking {{bookingCode}}",
+    "email_body": "Chào An Voyages,\n\nTôi cần hỗ trợ kiểm tra giao dịch này.\nMã booking: {{bookingCode}}\nMã thanh toán: {{paymentReference}}\n\nCảm ơn."
+  },
+  "payment_checkout": {
+    "secure_badge": "Thanh toán bảo mật qua SePay",
+    "title": "Hoàn tất thanh toán booking {{bookingCode}}",
+    "amount_due": "Số tiền cần thanh toán",
+    "open_full_page": "Mở trang thanh toán",
+    "missing_title": "Không tìm thấy phiên thanh toán",
+    "missing_description": "Phiên thanh toán chỉ tồn tại trong trình duyệt sau khi tạo booking. Vui lòng quay lại tour và tạo yêu cầu thanh toán mới.",
+    "embed_fallback": "Nếu khung thanh toán không hiển thị do chính sách bảo mật của SePay, bấm Mở trang thanh toán."
   },
   "filter": {
-    "title": "Bộ Lọc",
-    "price_range": "Khoảng Giá",
-    "property_type": "Loại Chỗ Ở",
-    "amenities": "Tiện Nghi",
-    "rating": "Đánh Giá",
-    "apply": "Áp Dụng Bộ Lọc",
-    "clear": "Xóa Tất Cả"
+    "title": "Bộ lọc",
+    "price_range": "Khoảng giá",
+    "property_type": "Loại tour",
+    "amenities": "Dịch vụ",
+    "rating": "Đánh giá",
+    "apply": "Áp dụng bộ lọc",
+    "clear": "Xóa tất cả",
+    "all": "Tất cả",
+    "selected_count": "{{count}} đang chọn"
   },
   "common": {
     "loading": "Đang tải...",
     "error": "Đã xảy ra lỗi",
-    "retry": "Thử Lại",
-    "back": "Quay Lại",
-    "next": "Tiếp Theo",
+    "success": "Thành công",
+    "retry": "Thử lại",
+    "retry_later": "Vui lòng thử lại sau",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
     "previous": "Trước"
   }
 }

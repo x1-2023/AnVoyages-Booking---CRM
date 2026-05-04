@@ -1,0 +1,271 @@
+### API Examples for Globe Wanderer Backend
+### Use with REST Client extension in VS Code
+
+@baseUrl = http://localhost:3000/api
+@token = YOUR_JWT_TOKEN_HERE
+
+### ========================================
+### Authentication
+### ========================================
+
+### Login Admin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@globewanderer.com",
+  "password": "Admin@123456"
+}
+
+### Get Profile
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{token}}
+
+### Change Password
+PUT {{baseUrl}}/auth/change-password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "Admin@123456",
+  "newPassword": "NewPassword@123"
+}
+
+### ========================================
+### Locations
+### ========================================
+
+### Get All Locations (Public)
+GET {{baseUrl}}/locations
+
+### Get Active Locations Only
+GET {{baseUrl}}/locations?isActive=true
+
+### Get Location by ID
+GET {{baseUrl}}/locations/location-id-here
+
+### Get Location by Slug
+GET {{baseUrl}}/locations/slug/ha-noi
+
+### Create Location (Auth Required)
+POST {{baseUrl}}/locations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Đà Nẵng",
+  "slug": "da-nang",
+  "description": "Thành phố đáng sống với biển đẹp và ẩm thực phong phú",
+  "seoTitle": "Du lịch Đà Nẵng - Thành phố biển đẹp nhất Việt Nam",
+  "seoDescription": "Khám phá Đà Nẵng với tour du lịch, khách sạn resort giá tốt",
+  "isActive": true
+}
+
+### Update Location (Auth Required)
+PATCH {{baseUrl}}/locations/location-id-here
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "description": "Updated description",
+  "isActive": true
+}
+
+### Delete Location (Auth Required)
+DELETE {{baseUrl}}/locations/location-id-here
+Authorization: Bearer {{token}}
+
+### ========================================
+### Properties
+### ========================================
+
+### Get All Properties
+GET {{baseUrl}}/properties
+
+### Filter Properties by Location
+GET {{baseUrl}}/properties?locationId=location-id-here
+
+### Filter Properties by Type
+GET {{baseUrl}}/properties?type=hotel
+
+### Filter Active Properties
+GET {{baseUrl}}/properties?isActive=true
+
+### Get Property by ID
+GET {{baseUrl}}/properties/property-id-here
+
+### Create Property (Auth Required)
+POST {{baseUrl}}/properties
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "InterContinental Danang Sun Peninsula Resort",
+  "locationId": "location-id-here",
+  "type": "hotel",
+  "description": "Resort 5 sao sang trọng tại Đà Nẵng",
+  "basePrice": 4500000,
+  "maxGuests": 2,
+  "images": [
+    "https://example.com/image1.jpg",
+    "https://example.com/image2.jpg"
+  ],
+  "amenities": [
+    "WiFi miễn phí",
+    "Bể bơi vô cực",
+    "Spa & Wellness",
+    "Nhà hàng cao cấp",
+    "Beach club"
+  ],
+  "isActive": true
+}
+
+### Update Property (Auth Required)
+PATCH {{baseUrl}}/properties/property-id-here
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "basePrice": 5000000,
+  "isActive": true
+}
+
+### Delete Property (Auth Required)
+DELETE {{baseUrl}}/properties/property-id-here
+Authorization: Bearer {{token}}
+
+### ========================================
+### Bookings
+### ========================================
+
+### Create Booking (Public - Customer Endpoint)
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+
+{
+  "customerName": "Trần Thị B",
+  "phone": "0987654321",
+  "email": "customer@example.com",
+  "locationId": "location-id-here",
+  "propertyId": "property-id-here",
+  "checkIn": "2025-03-01",
+  "checkOut": "2025-03-03",
+  "guests": 2,
+  "totalPrice": 9000000,
+  "note": "Yêu cầu phòng view biển"
+}
+
+### Get All Bookings (Auth Required)
+GET {{baseUrl}}/bookings
+Authorization: Bearer {{token}}
+
+### Filter Bookings by Status
+GET {{baseUrl}}/bookings?status=pending
+Authorization: Bearer {{token}}
+
+### Filter Bookings by Location
+GET {{baseUrl}}/bookings?locationId=location-id-here
+Authorization: Bearer {{token}}
+
+### Filter Bookings by Date Range
+GET {{baseUrl}}/bookings?startDate=2025-01-01&endDate=2025-12-31
+Authorization: Bearer {{token}}
+
+### Get Booking Statistics
+GET {{baseUrl}}/bookings/stats
+Authorization: Bearer {{token}}
+
+### Get Booking by ID
+GET {{baseUrl}}/bookings/booking-id-here
+Authorization: Bearer {{token}}
+
+### Update Booking Details (Auth Required)
+PATCH {{baseUrl}}/bookings/booking-id-here
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "guests": 3,
+  "totalPrice": 10500000,
+  "note": "Khách yêu cầu thêm giường phụ"
+}
+
+### Update Booking Status (Auth Required)
+PATCH {{baseUrl}}/bookings/booking-id-here/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "confirmed",
+  "adminNote": "Đã xác nhận với khách hàng qua điện thoại",
+  "paidAmount": 3000000
+}
+
+### Update Payment (Auth Required)
+PATCH {{baseUrl}}/bookings/booking-id-here/payment
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "paidAmount": 9000000
+}
+
+### Delete Booking (Auth Required)
+DELETE {{baseUrl}}/bookings/booking-id-here
+Authorization: Bearer {{token}}
+
+### ========================================
+### Dashboard
+### ========================================
+
+### Get Dashboard Overview
+GET {{baseUrl}}/dashboard/overview
+Authorization: Bearer {{token}}
+
+### Get Overview with Date Filter
+GET {{baseUrl}}/dashboard/overview?startDate=2025-01-01&endDate=2025-12-31
+Authorization: Bearer {{token}}
+
+### Get Revenue by Location
+GET {{baseUrl}}/dashboard/revenue/by-location
+Authorization: Bearer {{token}}
+
+### Get Revenue by Property
+GET {{baseUrl}}/dashboard/revenue/by-property
+Authorization: Bearer {{token}}
+
+### Get Revenue by Property for Specific Location
+GET {{baseUrl}}/dashboard/revenue/by-property?locationId=location-id-here
+Authorization: Bearer {{token}}
+
+### Get Monthly Revenue for 2025
+GET {{baseUrl}}/dashboard/revenue/by-month?year=2025
+Authorization: Bearer {{token}}
+
+### Get Top 10 Properties
+GET {{baseUrl}}/dashboard/top-properties?limit=10
+Authorization: Bearer {{token}}
+
+### Get Recent Bookings
+GET {{baseUrl}}/dashboard/recent-bookings?limit=5
+Authorization: Bearer {{token}}
+
+### ========================================
+### Booking Status Values
+### ========================================
+
+# - pending: Chờ xử lý
+# - contacted: Đã liên hệ
+# - confirmed: Đã xác nhận
+# - paid: Đã thanh toán
+# - completed: Hoàn thành (tính revenue)
+# - cancelled: Đã hủy
+
+### ========================================
+### Property Types
+### ========================================
+
+# - hotel: Khách sạn
+# - homestay: Homestay
+# - tour: Tour du lịch
+# - cruise: Du thuyền
