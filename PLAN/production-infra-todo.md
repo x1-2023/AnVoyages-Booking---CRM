@@ -50,6 +50,13 @@ Required from owner:
 
 Implemented behind the existing media upload API. Default remains local storage.
 
+Provisioned on 2026-05-04:
+
+- Account ID: `abd30598a3ca63eefde2e93deb6245c7`
+- Bucket: `anvoyages-media`
+- Region hint: `APAC`
+- Public r2.dev domain: `https://pub-cc52d0d156684b5da8c4bb0f163eb065.r2.dev`
+
 Backend env:
 
 ```env
