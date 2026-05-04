@@ -2,26 +2,20 @@
 
 ## Supabase / PostgreSQL
 
-Current local development still uses SQLite to avoid breaking the running server before a real Supabase connection string is available.
+Switched on 2026-05-04:
 
-To switch production to Supabase PostgreSQL:
+- Prisma datasource provider: `postgresql`
+- Runtime connection: Supabase session pooler on port `5432`
+- Imported existing SQLite data into Supabase to preserve current public IDs.
 
-1. Create a Supabase project.
-2. Provide `DATABASE_URL` from Supabase. Prefer direct connection for migration and pooled connection for runtime if Supabase recommends it for the deployment target.
-3. Change `backend/prisma/schema.prisma` datasource provider from `sqlite` to `postgresql`.
-4. Run:
+Useful commands:
 
 ```powershell
 npm --prefix backend run prisma:generate
 npm --prefix backend run prisma:push
-npm --prefix backend run prisma:seed
 ```
 
-Required from owner:
-
-- Supabase project URL for reference.
-- Supabase PostgreSQL connection string.
-- Decision on migration strategy: `db push` for early MVP or versioned Prisma migrations before production launch.
+Before production launch, move from `prisma db push` to versioned migrations after the schema stabilizes.
 
 ## Cloudflare Turnstile
 
