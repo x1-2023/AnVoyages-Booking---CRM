@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { ArrowLeft, SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,6 +10,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PropertyCard from '@/components/PropertyCard';
 import DestinationCard from '@/components/DestinationCard';
+import BackButton from '@/components/BackButton';
 import { locationService, Location } from '@/services/location.service';
 import { propertyService, Property } from '@/services/property.service';
 import { filterLocationProperties, getLocationBySlugOrId, getPriceRangeBounds, getPropertyAmenities, mapLocationHero, mapLocationToCard, mapPropertyToCard } from '@/lib/publicData';
@@ -219,13 +220,7 @@ const DestinationPage = () => {
           <div className="absolute inset-0 bg-gradient-overlay" />
           <div className="absolute inset-0 flex items-end">
             <div className="container-custom mx-auto px-4 md:px-8 pb-12">
-              <Link
-                to="/destinations"
-                className="inline-flex items-center gap-2 text-card/80 hover:text-card transition-colors mb-4"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                {t('common.back')}
-              </Link>
+              <BackButton to="/destinations" label={t('common.back')} tone="light" className="mb-4" />
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

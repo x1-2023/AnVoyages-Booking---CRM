@@ -2,10 +2,12 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, XCircle, Ban, Home, Mail, MessageCircle, RefreshCw, LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { useSettings } from '@/contexts/SettingsContext';
+import { launchSuccessConfetti } from '@/lib/confetti';
 
 type PaymentResultStatus = 'success' | 'error' | 'cancel';
 
@@ -62,6 +64,12 @@ const PaymentResult = ({ status }: PaymentResultProps) => {
     }),
   );
   const emailHref = `mailto:${contactEmail}?subject=${emailSubject}&body=${emailBody}`;
+
+  useEffect(() => {
+    if (status === 'success') {
+      launchSuccessConfetti();
+    }
+  }, [status]);
 
   return (
     <div className="min-h-screen bg-background">

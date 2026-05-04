@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Clock, User, ArrowLeft } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Calendar, Clock, User } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import BackButton from '@/components/BackButton';
 import { blogService, BlogPost } from '@/services/blog.service';
 import { setJsonLd, setSeoMeta } from '@/lib/seo';
 
@@ -65,12 +65,7 @@ export default function BlogPostPage() {
 
       <main className="pt-28">
         <div className="container-custom mx-auto px-4 md:px-8">
-          <Button asChild variant="ghost" className="mb-6 px-0">
-            <Link to="/blog">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {t('blog.back_to_blog')}
-            </Link>
-          </Button>
+          <BackButton to="/blog" label={t('blog.back_to_blog')} className="mb-6" />
 
           {loading ? (
             <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">

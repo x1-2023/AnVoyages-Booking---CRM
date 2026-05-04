@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { addDays, format } from 'date-fns';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft,
   MapPin,
   Star,
   Users,
@@ -48,6 +47,7 @@ import Footer from '@/components/Footer';
 import PropertyCard from '@/components/PropertyCard';
 import DateRangePicker from '@/components/DateRangePicker';
 import TurnstileWidget from '@/components/TurnstileWidget';
+import BackButton from '@/components/BackButton';
 import { bookingService, getSepayCheckoutStorageKey } from '@/services/booking.service';
 import { propertyService, Property, ProductOption } from '@/services/property.service';
 import {
@@ -62,6 +62,7 @@ import { setJsonLd, setSeoMeta } from '@/lib/seo';
 import { useLocalePreferences } from '@/contexts/LocalePreferencesContext';
 import { parseAmenity } from '@/lib/amenities';
 import { pickLocalizedText } from '@/lib/localizedContent';
+import { launchSuccessConfetti } from '@/lib/confetti';
 
 const amenityIcons: Record<string, React.ElementType> = {
   wifi: Wifi,
@@ -372,10 +373,11 @@ const PropertyDetail = () => {
           return;
         }
 
-        toast({
-          title: t('booking.hold_created'),
-          description: t('booking.hold_created_description'),
-        });
+          toast({
+            title: t('booking.hold_created'),
+            description: t('booking.hold_created_description'),
+          });
+          launchSuccessConfetti();
 
         setFormData({
           fullName: '',
@@ -398,6 +400,7 @@ const PropertyDetail = () => {
         title: t('common.success'),
         description: t('booking.consultation_sent_description', { name: property.name }),
       });
+      launchSuccessConfetti();
 
       setFormData({
         fullName: '',
@@ -460,13 +463,7 @@ const PropertyDetail = () => {
 
       <main className="pt-20 pb-20 md:pb-0">
         <div className="container-custom mx-auto px-4 md:px-8 py-4">
-          <Link
-            to={getPropertyBackLink(property)}
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t('common.back')}
-          </Link>
+          <BackButton to={getPropertyBackLink(property)} label={t('common.back')} />
         </div>
 
         <section className="relative">
