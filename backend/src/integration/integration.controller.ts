@@ -15,6 +15,11 @@ export class IntegrationController {
     return this.integrationService.channels();
   }
 
+  @Get('providers')
+  providers() {
+    return this.integrationService.providers();
+  }
+
   @Post('channels')
   createChannel(@Body() body: any) {
     return this.integrationService.createChannel(body);

@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Headers, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -16,8 +17,8 @@ export class BookingController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new booking (public endpoint)' })
-  create(@Body() createBookingDto: CreateBookingDto) {
-    return this.bookingService.create(createBookingDto);
+  create(@Body() createBookingDto: CreateBookingDto, @Req() request: Request) {
+    return this.bookingService.create(createBookingDto, request.ip);
   }
 
   @Get()

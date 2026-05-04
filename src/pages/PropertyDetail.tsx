@@ -47,6 +47,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PropertyCard from '@/components/PropertyCard';
 import DateRangePicker from '@/components/DateRangePicker';
+import TurnstileWidget from '@/components/TurnstileWidget';
 import { bookingService, getSepayCheckoutStorageKey } from '@/services/booking.service';
 import { propertyService, Property, ProductOption } from '@/services/property.service';
 import {
@@ -164,6 +165,7 @@ const PropertyDetail = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
   const [property, setProperty] = useState<Property | null>(null);
   const [allProperties, setAllProperties] = useState<Property[]>([]);
   const [formData, setFormData] = useState({
@@ -259,6 +261,7 @@ const PropertyDetail = () => {
     formData.bookingIntent === 'pay_deposit'
       ? depositPercent >= 100 ? t('booking.cta_pay_full') : t('booking.cta_deposit')
       : t('booking.submit');
+  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
   const scrollToBooking = (intent?: 'consultation' | 'pay_deposit') => {
     if (intent) {
@@ -350,6 +353,7 @@ const PropertyDetail = () => {
         ].filter(Boolean).join('\n'),
         bookingIntent: formData.bookingIntent === 'pay_deposit' && depositPercent >= 100 ? 'pay_full' : formData.bookingIntent,
         requestedPaymentMethod: formData.bookingIntent === 'pay_deposit' ? 'sepay' : undefined,
+        captchaToken: captchaToken || undefined,
       });
 
       if (formData.bookingIntent === 'pay_deposit') {
@@ -386,6 +390,7 @@ const PropertyDetail = () => {
           productOptionId: activeOptions[0]?.id || '',
           bookingIntent: 'consultation',
         });
+        setCaptchaToken('');
         return;
       }
 
@@ -407,6 +412,7 @@ const PropertyDetail = () => {
         productOptionId: activeOptions[0]?.id || '',
         bookingIntent: 'consultation',
       });
+      setCaptchaToken('');
     } catch (error) {
       const message = error instanceof Error ? error.message : t('booking.submit_error');
       toast({
@@ -961,7 +967,15 @@ const PropertyDetail = () => {
                       </p>
                     </div>
 
-                    <Button type="submit" variant="hero" size="lg" className="w-full" disabled={saving}>
+                    {turnstileSiteKey && (
+                      <TurnstileWidget
+                        siteKey={turnstileSiteKey}
+                        onVerify={setCaptchaToken}
+                        onExpire={() => setCaptchaToken('')}
+                      />
+                    )}
+
+                    <Button type="submit" variant="hero" size="lg" className="w-full" disabled={saving || Boolean(turnstileSiteKey && !captchaToken)}>
                       {saving ? t('booking.submitting') : primaryCtaLabel}
                     </Button>
 

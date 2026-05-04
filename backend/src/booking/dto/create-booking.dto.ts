@@ -80,4 +80,9 @@ export class CreateBookingDto {
   @IsString()
   @IsOptional()
   transferContent?: string;
+
+  @ApiProperty({ required: false, description: 'Cloudflare Turnstile response token' })
+  @IsString()
+  @IsOptional()
+  captchaToken?: string;
 }

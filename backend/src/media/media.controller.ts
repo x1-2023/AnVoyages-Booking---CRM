@@ -82,12 +82,7 @@ export class MediaController {
 
     await assertSafeImage(file);
 
-    return {
-      url: this.mediaService.getPublicUrl(file.filename),
-      filename: file.filename,
-      size: file.size,
-      mimeType: file.mimetype,
-    };
+    return this.mediaService.persistImage(file);
   }
 
   @Post('blog-image')
@@ -122,12 +117,7 @@ export class MediaController {
 
     await assertSafeImage(file);
 
-    return {
-      url: this.mediaService.getPublicUrl(file.filename, 'blog'),
-      filename: file.filename,
-      size: file.size,
-      mimeType: file.mimetype,
-    };
+    return this.mediaService.persistImage(file, 'blog');
   }
 
   @Post('product-image')
@@ -162,11 +152,6 @@ export class MediaController {
 
     await assertSafeImage(file);
 
-    return {
-      url: this.mediaService.getPublicUrl(file.filename, 'products'),
-      filename: file.filename,
-      size: file.size,
-      mimeType: file.mimetype,
-    };
+    return this.mediaService.persistImage(file, 'products');
   }
 }

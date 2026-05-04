@@ -1,13 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { integrationProviderDefinitions } from './connectors/connector.types';
 
-const defaultChannels = [
-  { provider: 'facebook', name: 'Facebook Page' },
-  { provider: 'instagram', name: 'Instagram Business' },
-  { provider: 'zalo', name: 'Zalo Official Account' },
-  { provider: 'tiktok', name: 'TikTok Lead/Form' },
-  { provider: 'sepay', name: 'Sepay Payment Webhook' },
-];
+const defaultChannels = integrationProviderDefinitions.map(({ provider, name }) => ({ provider, name }));
 
 @Injectable()
 export class IntegrationService {
@@ -19,6 +14,10 @@ export class IntegrationService {
       include: { automationRules: true },
       orderBy: { createdAt: 'asc' },
     });
+  }
+
+  providers() {
+    return integrationProviderDefinitions;
   }
 
   createChannel(body: any) {

@@ -3,6 +3,7 @@ import { SePayPgClient } from 'sepay-pg-node';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 import { SettingsService } from '../settings/settings.service';
+import { CaptchaService } from '../security/captcha.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { CreateSepayCheckoutDto } from './dto/create-sepay-checkout.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
@@ -32,9 +33,15 @@ export class BookingService {
     private prisma: PrismaService,
     private notificationService: NotificationService,
     private settingsService: SettingsService,
+    private captchaService: CaptchaService,
   ) {}
 
-  async create(createBookingDto: CreateBookingDto) {
+  async create(createBookingDto: CreateBookingDto, remoteIp?: string) {
+    await this.captchaService.verifyTurnstile(createBookingDto.captchaToken, remoteIp);
+    const bookingInput = { ...createBookingDto };
+    delete bookingInput.captchaToken;
+    delete bookingInput.totalPrice;
+
     const location = await this.prisma.location.findUnique({
       where: { id: createBookingDto.locationId },
     });
@@ -108,7 +115,7 @@ export class BookingService {
 
     const booking = await this.prisma.booking.create({
       data: {
-        ...createBookingDto,
+        ...bookingInput,
         customerId: customer.id,
         bookingCode,
         productOptionName: productOption?.name || productOption?.nameVi || productOption?.nameEn,

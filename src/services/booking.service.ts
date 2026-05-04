@@ -18,6 +18,7 @@ export interface CreateBookingDto {
   requestedPaymentMethod?: 'sepay' | 'bank_transfer';
   paymentReference?: string;
   transferContent?: string;
+  captchaToken?: string;
 }
 
 export interface UpdatePaymentDto {
