@@ -95,7 +95,9 @@ export class BookingService {
 
     const pricing = this.resolveBookingPricing(createBookingDto, property, productOption);
     const unitCost = productOption?.costPrice || property?.costPrice || 0;
-    const totalCost = pricing.fixedDuration ? unitCost : unitCost * pricing.nights;
+    const totalCost = pricing.fixedDuration
+      ? unitCost * pricing.productOptionQuantity
+      : unitCost * pricing.productOptionQuantity * pricing.nights;
     const paymentSettings = await this.getSepaySettings();
     const bookingCode = await this.generateBookingCode(paymentSettings.orderPrefix);
     const depositPercent = this.resolveRequestedDepositPercent(
@@ -122,6 +124,7 @@ export class BookingService {
         productOptionType: productOption?.optionType,
         productOptionPrice: productOption?.basePrice,
         productOptionDurationDays: productOption?.durationDays ?? property?.durationDays,
+        productOptionQuantity: pricing.productOptionQuantity,
         guests: pricing.guests,
         adultCount: pricing.adultCount,
         childCount: pricing.childCount,
@@ -371,21 +374,7 @@ export class BookingService {
       throw new BadRequestException('Guests must be at least 1');
     }
 
-    const maxGuests = productOption?.maxGuests ?? property.maxGuests;
-    const maxAdults = productOption?.maxAdults;
-    const maxChildren = productOption?.maxChildren;
-
-    if (maxGuests && guests > maxGuests) {
-      throw new BadRequestException('Guest count exceeds selected option capacity');
-    }
-
-    if (maxAdults && adultCount > maxAdults) {
-      throw new BadRequestException('Adult count exceeds selected option capacity');
-    }
-
-    if (maxChildren !== null && maxChildren !== undefined && childCount > maxChildren) {
-      throw new BadRequestException('Children count exceeds selected option capacity');
-    }
+    const capacity = this.resolveCapacity(property, productOption, adultCount, childCount);
 
     const checkIn = this.normalizeDateInput(createBookingDto.checkIn);
     const requestedCheckOut = this.normalizeDateInput(createBookingDto.checkOut);
@@ -402,7 +391,7 @@ export class BookingService {
     const hasPerGuestPricing = Boolean(adultPrice || childPrice);
     const unitPrice = hasPerGuestPricing
       ? (adultCount * Number(adultPrice || basePrice)) + (childCount * Number(childPrice || adultPrice || basePrice))
-      : basePrice;
+      : basePrice * capacity.productOptionQuantity;
 
     if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
       throw new BadRequestException('Product price is not configured');
@@ -418,6 +407,7 @@ export class BookingService {
         guests,
         adultCount,
         childCount,
+        productOptionQuantity: capacity.productOptionQuantity,
         nights: Math.max(durationDays - 1, 1),
         fixedDuration,
         totalPrice: Math.round(unitPrice),
@@ -436,10 +426,67 @@ export class BookingService {
       guests,
       adultCount,
       childCount,
+      productOptionQuantity: capacity.productOptionQuantity,
       nights,
       fixedDuration,
       totalPrice: Math.round(unitPrice * nights),
     };
+  }
+
+  private resolveCapacity(
+    property: any,
+    productOption: any,
+    adultCount: number,
+    childCount: number,
+  ) {
+    const guests = adultCount + childCount;
+    const maxGuests = productOption?.maxGuests ?? property.maxGuests;
+    const maxAdults = productOption?.maxAdults;
+    const maxChildren = productOption?.maxChildren;
+    const optionType = productOption?.optionType;
+    const unitBased = this.isUnitBasedBooking(property?.type, optionType);
+
+    if (!unitBased) {
+      if (maxGuests && guests > maxGuests) {
+        throw new BadRequestException('Guest count exceeds selected option capacity');
+      }
+
+      if (maxAdults && adultCount > maxAdults) {
+        throw new BadRequestException('Adult count exceeds selected option capacity');
+      }
+
+      if (maxChildren !== null && maxChildren !== undefined && childCount > maxChildren) {
+        throw new BadRequestException('Children count exceeds selected option capacity');
+      }
+
+      return { productOptionQuantity: 1 };
+    }
+
+    const guestCapacity = Math.max(Number(maxGuests || 1), 1);
+    const adultCapacity = Math.max(Number(maxAdults || guestCapacity), 1);
+    const childCapacity = maxChildren === null || maxChildren === undefined
+      ? guestCapacity
+      : Math.max(Number(maxChildren), 0);
+
+    if (childCount > 0 && childCapacity <= 0) {
+      throw new BadRequestException('Selected option does not allow children');
+    }
+
+    const quantityFromGuests = Math.ceil(guests / guestCapacity);
+    const quantityFromAdults = Math.ceil(adultCount / adultCapacity);
+    const quantityFromChildren = childCount > 0 ? Math.ceil(childCount / childCapacity) : 1;
+    const productOptionQuantity = Math.max(quantityFromGuests, quantityFromAdults, quantityFromChildren, 1);
+
+    if (property.maxGuests && guests > property.maxGuests && !productOption) {
+      throw new BadRequestException('Guest count exceeds property capacity');
+    }
+
+    return { productOptionQuantity };
+  }
+
+  private isUnitBasedBooking(propertyType?: string, optionType?: string) {
+    if (['room', 'cabin', 'vehicle'].includes(optionType || '')) return true;
+    return ['hotel', 'homestay', 'cruise', 'transport', 'car-rental'].includes(propertyType || '');
   }
 
   private validateStatusTransition(currentStatus: string, newStatus: string) {

@@ -158,6 +158,7 @@ model Booking {
   productOptionType String?
   productOptionPrice Float?
   productOptionDurationDays Int?
+  productOptionQuantity Int @default(1)
   checkIn      DateTime
   checkOut     DateTime
   guests       Int      @default(1)

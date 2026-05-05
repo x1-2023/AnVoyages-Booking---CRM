@@ -52,6 +52,7 @@ export interface BookingResponse {
   depositPercent?: number;
   discountCode?: string;
   totalPrice?: number;
+  productOptionQuantity?: number;
   sepayCheckout?: SepayCheckout;
 }
 

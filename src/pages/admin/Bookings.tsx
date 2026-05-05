@@ -79,6 +79,7 @@ interface Booking {
   productOptionType?: string;
   productOptionPrice?: number;
   productOptionDurationDays?: number;
+  productOptionQuantity?: number;
   paymentStatus?: PaymentStatus;
   paymentReference?: string;
   transferContent?: string;
@@ -141,6 +142,15 @@ function getBookingOptionName(booking: Booking) {
     ?? booking.productOption?.name
     ?? booking.productOption?.nameEn
     ?? '-';
+}
+
+function getBookingUnitLabel(booking: Booking) {
+  const type = booking.productOptionType ?? booking.productOption?.optionType ?? booking.property?.type;
+
+  if (type === 'cabin' || booking.property?.type === 'cruise') return 'cabin';
+  if (type === 'vehicle' || type === 'transport' || type === 'car-rental') return 'xe';
+  if (type === 'room' || booking.property?.type === 'hotel' || booking.property?.type === 'homestay') return 'phòng';
+  return 'gói';
 }
 
 function getBookingDurationDays(booking: Booking) {
@@ -481,7 +491,10 @@ function BookingProductSummary({ booking }: { booking: Booking }) {
     <div className="min-w-[220px] space-y-1 text-sm">
       <div className="font-medium">{getBookingProductName(booking)}</div>
       {optionName !== '-' && (
-        <div className="text-xs text-muted-foreground">Gói: {optionName}</div>
+        <div className="text-xs text-muted-foreground">
+          Gói: {optionName}
+          {(booking.productOptionQuantity ?? 1) > 1 ? ` · ${booking.productOptionQuantity} ${getBookingUnitLabel(booking)}` : ''}
+        </div>
       )}
       <div className="text-xs text-muted-foreground">
         {durationDays ? `${durationDays} ngày` : formatBookingSchedule(booking)}
@@ -536,7 +549,10 @@ function BookingMobileCard({
         <div className="grid grid-cols-2 gap-3 text-sm">
           <SummaryItem label="Sản phẩm" value={getBookingProductName(booking)} />
           <SummaryItem label="Lịch trình" value={formatBookingSchedule(booking)} />
-          <SummaryItem label="Gói" value={getBookingOptionName(booking)} />
+          <SummaryItem
+            label="Gói"
+            value={`${getBookingOptionName(booking)}${(booking.productOptionQuantity ?? 1) > 1 ? ` · ${booking.productOptionQuantity} ${getBookingUnitLabel(booking)}` : ''}`}
+          />
           <SummaryItem label="Giá bán" value={currency(booking.totalPrice)} />
           <SummaryItem label="Đã thu" value={currency(booking.paidAmount)} />
           <SummaryItem label="Cọc khách chọn" value={`${booking.depositPercent ?? 0}% - ${currency(booking.depositAmount ?? 0)}`} />
@@ -795,6 +811,7 @@ function BookingDetailDialog({
                   <SummaryItem label="Cọc khách chọn" value={`${booking.depositPercent ?? 0}% - ${currency(booking.depositAmount ?? 0)}`} />
                   <SummaryItem label="Trạng thái tiền" value={paymentLabels[booking.paymentStatus ?? 'unpaid']} />
                   <SummaryItem label="Intent" value={intentLabels[booking.bookingIntent ?? 'consultation']} />
+                  <SummaryItem label="Số phòng/cabin" value={`${booking.productOptionQuantity ?? 1} ${getBookingUnitLabel(booking)}`} />
                   <SummaryItem label="Mã ưu đãi" value={booking.discountCode || '-'} />
                 </div>
                 <div className="flex gap-2">

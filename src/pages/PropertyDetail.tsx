@@ -147,6 +147,43 @@ function getGuestLabel(count: number, language?: string) {
   return language?.startsWith('vi') ? `${count} khách` : `${count} guest${count > 1 ? 's' : ''}`;
 }
 
+function isUnitBasedOption(option?: ProductOption, propertyType?: string) {
+  if (['room', 'cabin', 'vehicle'].includes(option?.optionType || '')) return true;
+  return ['hotel', 'homestay', 'cruise', 'transport', 'car-rental'].includes(propertyType || '');
+}
+
+function getUnitLabel(option?: ProductOption, propertyType?: string, language?: string, count = 1) {
+  const isVi = language?.startsWith('vi');
+  const optionType = option?.optionType;
+  const type = optionType || propertyType;
+
+  if (type === 'cabin' || propertyType === 'cruise') return isVi ? 'cabin' : count > 1 ? 'cabins' : 'cabin';
+  if (type === 'vehicle' || propertyType === 'transport' || propertyType === 'car-rental') return isVi ? 'xe' : count > 1 ? 'vehicles' : 'vehicle';
+  if (type === 'room' || propertyType === 'hotel' || propertyType === 'homestay') return isVi ? 'phòng' : count > 1 ? 'rooms' : 'room';
+
+  return isVi ? 'gói' : count > 1 ? 'packages' : 'package';
+}
+
+function getOptionQuantity(option: ProductOption | undefined, property: Property | null | undefined, adultCount: number, childCount: number) {
+  if (!isUnitBasedOption(option, property?.type)) return 1;
+
+  const guests = Math.max(Math.round(adultCount || 0) + Math.round(childCount || 0), 1);
+  const guestCapacity = Math.max(option?.maxGuests || property?.maxGuests || 1, 1);
+  const adultCapacity = Math.max(option?.maxAdults || guestCapacity, 1);
+  const childCapacity = option?.maxChildren === undefined || option?.maxChildren === null
+    ? guestCapacity
+    : Math.max(option.maxChildren, 0);
+
+  if (childCount > 0 && childCapacity <= 0) return 1;
+
+  return Math.max(
+    Math.ceil(guests / guestCapacity),
+    Math.ceil(Math.max(adultCount, 1) / adultCapacity),
+    childCount > 0 ? Math.ceil(childCount / childCapacity) : 1,
+    1,
+  );
+}
+
 function getPriceLabel(type?: string, fixedDuration?: boolean, language?: string) {
   const isVi = language?.startsWith('vi');
 
@@ -157,9 +194,13 @@ function getPriceLabel(type?: string, fixedDuration?: boolean, language?: string
 }
 
 function getGuestSelection(option?: ProductOption, property?: Property | null, adultCount = 2, childCount = 0) {
-  const maxGuests = option?.maxGuests || property?.maxGuests || 1;
-  const maxAdults = option?.maxAdults || maxGuests;
-  const maxChildren = option?.maxChildren ?? Math.max(maxGuests - 1, 0);
+  const perUnitMaxGuests = option?.maxGuests || property?.maxGuests || 1;
+  const unitBased = isUnitBasedOption(option, property?.type);
+  const maxGuests = unitBased ? Math.max(perUnitMaxGuests * 8, perUnitMaxGuests) : perUnitMaxGuests;
+  const maxAdults = unitBased ? Math.max((option?.maxAdults || perUnitMaxGuests) * 8, 1) : option?.maxAdults || maxGuests;
+  const maxChildren = unitBased
+    ? option?.maxChildren === undefined || option?.maxChildren === null ? Math.max(maxGuests - 1, 0) : Math.max(option.maxChildren * 8, 0)
+    : option?.maxChildren ?? Math.max(maxGuests - 1, 0);
   const adults = Math.max(1, Math.min(Math.round(adultCount || 1), maxAdults, maxGuests));
   const availableForChildren = Math.max(maxGuests - adults, 0);
   const children = Math.max(0, Math.min(Math.round(childCount || 0), maxChildren, availableForChildren));
@@ -249,13 +290,24 @@ const PropertyDetail = () => {
   const selectedAdultPrice = selectedOption?.adultPrice ?? property?.adultPrice;
   const selectedChildPrice = selectedOption?.childPrice ?? property?.childPrice;
   const hasGuestPricing = Boolean(selectedAdultPrice || selectedChildPrice);
+  const selectedOptionQuantity = getOptionQuantity(selectedOption, property, formData.adultCount, formData.childCount);
+  const selectedUnitLabel = getUnitLabel(selectedOption, property?.type, i18n.language, selectedOptionQuantity);
   const selectedUnitPrice = hasGuestPricing
     ? (formData.adultCount * Number(selectedAdultPrice || selectedBasePrice))
       + (formData.childCount * Number(selectedChildPrice || selectedAdultPrice || selectedBasePrice))
-    : selectedBasePrice;
-  const selectedMaxGuests = selectedOption?.maxGuests || property?.maxGuests || 1;
-  const selectedMaxAdults = selectedOption?.maxAdults || selectedMaxGuests;
-  const selectedMaxChildren = selectedOption?.maxChildren ?? Math.max(selectedMaxGuests - 1, 0);
+    : selectedBasePrice * selectedOptionQuantity;
+  const selectedPerUnitMaxGuests = selectedOption?.maxGuests || property?.maxGuests || 1;
+  const selectedMaxGuests = isUnitBasedOption(selectedOption, property?.type)
+    ? Math.max(selectedPerUnitMaxGuests * 8, selectedPerUnitMaxGuests)
+    : selectedPerUnitMaxGuests;
+  const selectedMaxAdults = isUnitBasedOption(selectedOption, property?.type)
+    ? Math.max((selectedOption?.maxAdults || selectedPerUnitMaxGuests) * 8, 1)
+    : selectedOption?.maxAdults || selectedMaxGuests;
+  const selectedMaxChildren = isUnitBasedOption(selectedOption, property?.type)
+    ? selectedOption?.maxChildren === undefined || selectedOption?.maxChildren === null
+      ? selectedMaxGuests - 1
+      : Math.max(selectedOption.maxChildren * 8, 0)
+    : selectedOption?.maxChildren ?? Math.max(selectedMaxGuests - 1, 0);
   const fixedDurationDays = selectedOption?.durationDays || property?.durationDays || 0;
   const shouldUseFixedStartDate = hasFixedStartDate(property?.type, fixedDurationDays);
   const fixedCheckoutOffsetDays = getCheckoutOffsetDays(fixedDurationDays);
@@ -380,6 +432,9 @@ const PropertyDetail = () => {
             : '',
           selectedOption
             ? `Option: ${getOptionName(selectedOption, i18n.language)} (${selectedOption.optionType}) - ${formatMoney(selectedOption.basePrice)}`
+            : '',
+          selectedOptionQuantity > 1
+            ? t('booking.note_auto_split', { count: selectedOptionQuantity, unit: selectedUnitLabel })
             : '',
         ].filter(Boolean).join('\n'),
         bookingIntent: formData.bookingIntent === 'pay_deposit' && depositPercent >= 100 ? 'pay_full' : formData.bookingIntent,
@@ -799,7 +854,12 @@ const PropertyDetail = () => {
                                   </span>
                                 )}
                                 <span className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                                  {option.maxGuests ? <span>{getGuestLabel(option.maxGuests, i18n.language)}</span> : null}
+                                  {option.maxGuests ? (
+                                    <span>
+                                      {getGuestLabel(option.maxGuests, i18n.language)}
+                                      {isUnitBasedOption(option, property.type) ? `/${getUnitLabel(option, property.type, i18n.language)}` : ''}
+                                    </span>
+                                  ) : null}
                                   {option.durationDays ? <span>{getDurationLabel(option.durationDays, i18n.language)}</span> : null}
                                   {option.bedType ? <span>{option.bedType}</span> : null}
                                   {option.areaSqm ? <span>{option.areaSqm}m2</span> : null}
@@ -918,6 +978,9 @@ const PropertyDetail = () => {
                       </div>
                       <p className="mt-1.5 text-xs text-muted-foreground">
                         {getGuestLabel(formData.guests, i18n.language)}
+                        {selectedOptionQuantity > 1
+                          ? ` · ${t('booking.auto_split_summary', { count: selectedOptionQuantity, unit: selectedUnitLabel })}`
+                          : ''}
                       </p>
                     </div>
 

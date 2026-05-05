@@ -332,6 +332,8 @@
     "note_selected_payment": "Customer selected {{percent}}% payment ({{amount}}).",
     "note_selected_consultation": "Customer selected consultation first.",
     "note_discount_code": "Customer entered promo code: {{code}} (CRM verification required).",
+    "note_auto_split": "System auto-split this request into {{count}} {{unit}} based on guest count.",
+    "auto_split_summary": "auto-split into {{count}} {{unit}}",
     "payment_session_created": "Payment session created",
     "payment_session_created_description": "Booking {{code}} has been created. Please complete payment in the next step.",
     "hold_created": "Hold request created",
