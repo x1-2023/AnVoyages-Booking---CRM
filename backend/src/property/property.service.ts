@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
+import { UpdateOptionInventoryDto } from './dto/update-option-inventory.dto';
 
 @Injectable()
 export class PropertyService {
@@ -227,6 +228,158 @@ export class PropertyService {
     };
   }
 
+  async getInventoryCalendar(id: string, startDate?: string, days = 30) {
+    const property = await this.prisma.property.findUnique({
+      where: { id },
+      include: {
+        location: true,
+        options: {
+          where: { isActive: true },
+          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+        },
+      },
+    });
+
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const safeDays = Math.min(Math.max(Number(days) || 30, 1), 90);
+    const start = startDate ? this.normalizeDateInput(startDate) : this.startOfUtcDay(new Date());
+    if (Number.isNaN(start.getTime())) {
+      throw new BadRequestException('Invalid inventory start date');
+    }
+
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + safeDays);
+    const dates = this.getInventoryDates(start, end);
+    const optionIds = property.options.map((option) => option.id);
+
+    const [overrides, bookings] = await Promise.all([
+      this.prisma.productOptionInventory.findMany({
+        where: {
+          optionId: { in: optionIds },
+          date: { in: dates },
+        },
+      }),
+      this.prisma.booking.findMany({
+        where: {
+          productOptionId: { in: optionIds },
+          checkIn: { lt: end },
+          checkOut: { gt: start },
+          status: { not: 'cancelled' },
+          OR: [
+            { bookingIntent: { in: ['pay_deposit', 'pay_full'] } },
+            { status: { in: ['confirmed', 'deposit', 'paid'] } },
+          ],
+        },
+        select: {
+          productOptionId: true,
+          productOptionQuantity: true,
+          checkIn: true,
+          checkOut: true,
+          bookingCode: true,
+          customerName: true,
+        },
+      }),
+    ]);
+
+    const overrideByOptionDate = new Map(overrides.map((item) => [`${item.optionId}:${this.toDateKey(item.date)}`, item]));
+    const bookedByOptionDate = new Map<string, number>();
+
+    bookings.forEach((booking) => {
+      if (!booking.productOptionId) return;
+
+      this.getInventoryDates(booking.checkIn, booking.checkOut).forEach((date) => {
+        const key = `${booking.productOptionId}:${this.toDateKey(date)}`;
+        bookedByOptionDate.set(key, (bookedByOptionDate.get(key) || 0) + Math.max(booking.productOptionQuantity || 1, 1));
+      });
+    });
+
+    return {
+      property: this.parsePropertyJson({ ...property, options: [] }),
+      startDate: this.toDateKey(start),
+      endDate: this.toDateKey(end),
+      options: property.options.map((option) => {
+        const defaultUnits = Number(option.inventoryQuantity || 0);
+        return {
+          ...this.parseOptionJson(option),
+          defaultUnits,
+          dates: dates.map((date) => {
+            const key = `${option.id}:${this.toDateKey(date)}`;
+            const override = overrideByOptionDate.get(key);
+            const totalUnits = override ? override.totalUnits : defaultUnits;
+            const bookedUnits = bookedByOptionDate.get(key) || 0;
+            const closed = override?.closed || false;
+            return {
+              date: this.toDateKey(date),
+              totalUnits,
+              bookedUnits,
+              availableUnits: closed ? 0 : Math.max(totalUnits - bookedUnits, 0),
+              closed,
+              isOverride: Boolean(override),
+              note: override?.note || '',
+            };
+          }),
+        };
+      }),
+    };
+  }
+
+  async updateOptionInventory(optionId: string, dto: UpdateOptionInventoryDto) {
+    const option = await this.prisma.productOption.findUnique({ where: { id: optionId } });
+    if (!option) {
+      throw new NotFoundException('Product option not found');
+    }
+
+    const date = this.normalizeDateInput(dto.date);
+    if (Number.isNaN(date.getTime())) {
+      throw new BadRequestException('Invalid inventory date');
+    }
+
+    return this.prisma.productOptionInventory.upsert({
+      where: {
+        optionId_date: {
+          optionId,
+          date,
+        },
+      },
+      update: {
+        totalUnits: Number(dto.totalUnits) || 0,
+        closed: dto.closed ?? false,
+        note: dto.note,
+      },
+      create: {
+        optionId,
+        date,
+        totalUnits: Number(dto.totalUnits) || 0,
+        closed: dto.closed ?? false,
+        note: dto.note,
+      },
+    });
+  }
+
+  async deleteOptionInventory(optionId: string, value: string) {
+    const option = await this.prisma.productOption.findUnique({ where: { id: optionId } });
+    if (!option) {
+      throw new NotFoundException('Product option not found');
+    }
+
+    const date = this.normalizeDateInput(value);
+    if (Number.isNaN(date.getTime())) {
+      throw new BadRequestException('Invalid inventory date');
+    }
+
+    await this.prisma.productOptionInventory.deleteMany({
+      where: {
+        optionId,
+        date,
+      },
+    });
+
+    return { success: true };
+  }
+
   async findCategories(isActive?: boolean) {
     const categories = await this.prisma.productCategory.findMany({
       where: isActive === undefined ? undefined : { isActive },
@@ -398,6 +551,10 @@ export class PropertyService {
 
   private normalizeDateInput(value: string) {
     return new Date(`${value}T00:00:00.000Z`);
+  }
+
+  private startOfUtcDay(value: Date) {
+    return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
   }
 
   private getRequestedUnits(property: any, option: any, adultCount: number, childCount: number) {

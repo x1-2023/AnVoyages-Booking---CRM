@@ -117,6 +117,28 @@ export interface OptionAvailability {
   }>;
 }
 
+export interface InventoryCalendarDay {
+  date: string;
+  totalUnits: number;
+  bookedUnits: number;
+  availableUnits: number;
+  closed: boolean;
+  isOverride: boolean;
+  note?: string;
+}
+
+export interface InventoryCalendarOption extends ProductOption {
+  defaultUnits: number;
+  dates: InventoryCalendarDay[];
+}
+
+export interface InventoryCalendar {
+  property: Property;
+  startDate: string;
+  endDate: string;
+  options: InventoryCalendarOption[];
+}
+
 export interface CreatePropertyDto {
   name: string;
   nameVi?: string;
@@ -170,6 +192,21 @@ export const propertyService = {
   async getAvailability(id: string, params: { productOptionId?: string; checkIn?: string; checkOut?: string; adults?: number; children?: number }) {
     const response = await api.get(`/properties/${id}/availability`, { params });
     return response.data as OptionAvailability;
+  },
+
+  async getInventory(id: string, params?: { startDate?: string; days?: number }) {
+    const response = await api.get(`/properties/${id}/inventory`, { params });
+    return response.data as InventoryCalendar;
+  },
+
+  async updateOptionInventory(optionId: string, data: { date: string; totalUnits: number; closed?: boolean; note?: string }) {
+    const response = await api.patch(`/properties/options/${optionId}/inventory`, data);
+    return response.data;
+  },
+
+  async deleteOptionInventory(optionId: string, date: string) {
+    const response = await api.delete(`/properties/options/${optionId}/inventory`, { params: { date } });
+    return response.data;
   },
 
   async create(data: CreatePropertyDto) {

@@ -4,6 +4,7 @@ import { PropertyService } from './property.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
+import { UpdateOptionInventoryDto } from './dto/update-option-inventory.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Properties')
@@ -33,6 +34,22 @@ export class PropertyController {
   @ApiOperation({ summary: 'Create product category' })
   createCategory(@Body() dto: CreateProductCategoryDto) {
     return this.propertyService.createCategory(dto);
+  }
+
+  @Patch('options/:optionId/inventory')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Upsert option inventory override for a date' })
+  updateOptionInventory(@Param('optionId') optionId: string, @Body() dto: UpdateOptionInventoryDto) {
+    return this.propertyService.updateOptionInventory(optionId, dto);
+  }
+
+  @Delete('options/:optionId/inventory')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Remove option inventory override for a date' })
+  deleteOptionInventory(@Param('optionId') optionId: string, @Query('date') date: string) {
+    return this.propertyService.deleteOptionInventory(optionId, date);
   }
 
   @Get()
@@ -72,6 +89,18 @@ export class PropertyController {
       adults: adults ? Number(adults) : undefined,
       children: children ? Number(children) : undefined,
     });
+  }
+
+  @Get(':id/inventory')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get inventory calendar for a property' })
+  getInventory(
+    @Param('id') id: string,
+    @Query('startDate') startDate?: string,
+    @Query('days') days?: string,
+  ) {
+    return this.propertyService.getInventoryCalendar(id, startDate, days ? Number(days) : undefined);
   }
 
   @Patch(':id')

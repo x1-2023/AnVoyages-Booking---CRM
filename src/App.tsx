@@ -30,6 +30,7 @@ import AdminSuppliers from "./pages/admin/Suppliers";
 import AdminReports from "./pages/admin/Reports";
 import AdminIntegrations from "./pages/admin/Integrations";
 import AdminBlog from "./pages/admin/Blog";
+import AdminInventory from "./pages/admin/Inventory";
 import BlogPostForm from "./pages/admin/BlogPostForm";
 import AdminLogin from "./pages/admin/Login";
 import LocationForm from "./pages/admin/LocationForm";
@@ -82,6 +83,7 @@ const AppRoutes = () => {
             <Route path="leads" element={<AdminLeads />} />
             <Route path="bookings" element={<AdminBookings />} />
             <Route path="properties" element={<AdminProperties />} />
+            <Route path="inventory" element={<AdminInventory />} />
             <Route path="properties/new" element={<PropertyForm />} />
             <Route path="properties/:id/edit" element={<PropertyForm />} />
             <Route path="locations" element={<AdminLocations />} />
