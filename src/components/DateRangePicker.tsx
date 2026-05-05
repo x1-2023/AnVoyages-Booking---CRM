@@ -191,17 +191,17 @@ export default function DateRangePicker({
       )}
 
       {!isStartOnly && (
-        <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {quickRanges.map((preset) => (
             <Button
               key={preset.label}
               type="button"
               variant="outline"
               size="sm"
-              className="h-9 shrink-0 rounded-full border-primary/25 bg-background px-3 text-xs font-semibold text-primary shadow-sm hover:bg-primary/10"
+              className="h-10 w-full min-w-0 rounded-full border-primary/25 bg-background px-2 text-center text-[11px] font-semibold leading-tight text-primary shadow-sm hover:bg-primary/10 lg:text-xs"
               onClick={() => onChange(preset.range)}
             >
-              {preset.label}
+              <span className="block w-full whitespace-normal">{preset.label}</span>
             </Button>
           ))}
         </div>

@@ -875,7 +875,7 @@ const PropertyDetail = () => {
                         <div className="rounded-xl border bg-background p-3">
                           <div className="flex items-center justify-between gap-3">
                             <div>
-                              <div className="text-sm font-semibold">{t('homepage.adults')}</div>
+                              <div className="text-sm font-semibold">{t('hero.adults')}</div>
                               <div className="text-xs text-muted-foreground">
                                 {formData.adultCount}/{selectedMaxAdults}
                               </div>
@@ -897,7 +897,7 @@ const PropertyDetail = () => {
                         <div className="rounded-xl border bg-background p-3">
                           <div className="flex items-center justify-between gap-3">
                             <div>
-                              <div className="text-sm font-semibold">{t('homepage.children')}</div>
+                              <div className="text-sm font-semibold">{t('hero.children')}</div>
                               <div className="text-xs text-muted-foreground">
                                 {formData.childCount}/{selectedMaxChildren}
                               </div>
