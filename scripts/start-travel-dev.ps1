@@ -1,5 +1,6 @@
 param(
-  [switch]$SkipServers
+  [switch]$SkipServers,
+  [switch]$DevFrontend
 )
 
 $ErrorActionPreference = "Stop"
@@ -59,12 +60,31 @@ if (-not $SkipServers) {
     -RedirectStandardError $backendErr `
     -WindowStyle Hidden
 
-  Start-Process -FilePath "C:\Program Files\nodejs\npm.cmd" `
-    -ArgumentList @("run", "dev", "--", "--host", "0.0.0.0", "--port", "8080") `
-    -WorkingDirectory $root `
-    -RedirectStandardOutput $frontendLog `
-    -RedirectStandardError $frontendErr `
-    -WindowStyle Hidden
+  if ($DevFrontend) {
+    Start-Process -FilePath "C:\Program Files\nodejs\npm.cmd" `
+      -ArgumentList @("run", "dev", "--", "--host", "0.0.0.0", "--port", "8080") `
+      -WorkingDirectory $root `
+      -RedirectStandardOutput $frontendLog `
+      -RedirectStandardError $frontendErr `
+      -WindowStyle Hidden
+  } else {
+    Push-Location $root
+    try {
+      & "C:\Program Files\nodejs\npm.cmd" run build
+      if ($LASTEXITCODE -ne 0) {
+        throw "Frontend build failed."
+      }
+    } finally {
+      Pop-Location
+    }
+
+    Start-Process -FilePath "C:\Program Files\nodejs\npm.cmd" `
+      -ArgumentList @("run", "preview", "--", "--host", "0.0.0.0", "--port", "8080") `
+      -WorkingDirectory $root `
+      -RedirectStandardOutput $frontendLog `
+      -RedirectStandardError $frontendErr `
+      -WindowStyle Hidden
+  }
 }
 
 Stop-TravelTunnel
