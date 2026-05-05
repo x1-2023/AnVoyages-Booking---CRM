@@ -7,6 +7,7 @@
     "dev": "vite",
     "dev:backend": "npm --prefix backend run start:dev",
     "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
+    "dev:tunnel": "powershell -ExecutionPolicy Bypass -File ./scripts/start-travel-dev.ps1",
     "setup": "npm install && npm --prefix backend install && npm --prefix backend run prisma:generate && npm --prefix backend run prisma:push && npm --prefix backend run prisma:seed",
     "build": "vite build",
     "build:dev": "vite build --mode development",
