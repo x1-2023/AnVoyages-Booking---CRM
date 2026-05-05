@@ -46,6 +46,7 @@ const createEmptyOption = (type = 'package'): ProductOption => ({
   maxGuests: 1,
   maxAdults: 2,
   maxChildren: 0,
+  inventoryQuantity: 1,
   durationDays: undefined,
   bedType: '',
   bedCount: 1,
@@ -84,6 +85,7 @@ function cleanProductOptions(options?: ProductOption[]) {
       maxGuests: Number(option.maxGuests) || undefined,
       maxAdults: Number(option.maxAdults) || undefined,
       maxChildren: Number(option.maxChildren) || undefined,
+      inventoryQuantity: Number(option.inventoryQuantity) || undefined,
       durationDays: Number(option.durationDays) || undefined,
       areaSqm: Number(option.areaSqm) || undefined,
       bedCount: Number(option.bedCount) || undefined,
@@ -708,7 +710,7 @@ export default function PropertyForm() {
                           </div>
                         </div>
 
-                        <div className="grid gap-3 md:grid-cols-5">
+                        <div className="grid gap-3 md:grid-cols-6">
                           <div className="space-y-2">
                             <Label htmlFor={`option-${index}-base-price`}>Giá bán</Label>
                             <Input
@@ -762,6 +764,17 @@ export default function PropertyForm() {
                               value={option.maxChildren ?? ''}
                               onChange={(event) => updateProductOption(index, { maxChildren: Number(event.target.value) || 0 })}
                               placeholder="VD: 1"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`option-${index}-inventory`}>Số lượng bán</Label>
+                            <Input
+                              id={`option-${index}-inventory`}
+                              type="number"
+                              min={0}
+                              value={option.inventoryQuantity ?? ''}
+                              onChange={(event) => updateProductOption(index, { inventoryQuantity: Number(event.target.value) || undefined })}
+                              placeholder="VD: 10 phòng"
                             />
                           </div>
                         </div>

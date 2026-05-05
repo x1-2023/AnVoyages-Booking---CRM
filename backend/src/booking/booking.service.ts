@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { SePayPgClient } from 'sepay-pg-node';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
@@ -78,21 +79,6 @@ export class BookingService {
       throw new NotFoundException('Product option not found');
     }
 
-    const customer = await this.prisma.customer.upsert({
-      where: { phone: createBookingDto.phone },
-      update: {
-        name: createBookingDto.customerName,
-        email: createBookingDto.email,
-        source: 'web',
-      },
-      create: {
-        name: createBookingDto.customerName,
-        phone: createBookingDto.phone,
-        email: createBookingDto.email,
-        source: 'web',
-      },
-    });
-
     const pricing = this.resolveBookingPricing(createBookingDto, property, productOption);
     const unitCost = productOption?.costPrice || property?.costPrice || 0;
     const totalCost = pricing.fixedDuration
@@ -115,46 +101,67 @@ export class BookingService {
         createBookingDto.phone,
       );
 
-    const booking = await this.prisma.booking.create({
-      data: {
-        ...bookingInput,
-        customerId: customer.id,
-        bookingCode,
-        productOptionName: productOption?.name || productOption?.nameVi || productOption?.nameEn,
-        productOptionType: productOption?.optionType,
-        productOptionPrice: productOption?.basePrice,
-        productOptionDurationDays: productOption?.durationDays ?? property?.durationDays,
-        productOptionQuantity: pricing.productOptionQuantity,
-        guests: pricing.guests,
-        adultCount: pricing.adultCount,
-        childCount: pricing.childCount,
-        checkIn: pricing.checkIn,
-        checkOut: pricing.checkOut,
-        totalCost,
-        totalPrice: pricing.totalPrice,
-        profit: Math.max(pricing.totalPrice - totalCost, 0),
-        depositAmount,
-        depositPercent,
-        discountCode: this.normalizeDiscountCode(createBookingDto.discountCode),
-        paymentReference,
-        transferContent,
-        status: BookingStatus.PENDING,
-      },
-      include: this.includeRelations(),
-    });
+    const booking = await this.prisma.$transaction(async (tx) => {
+      await this.assertInventoryAvailable(tx, property, productOption, pricing);
 
-    await this.prisma.lead.create({
-      data: {
-        customerId: customer.id,
-        propertyId: createBookingDto.propertyId,
-        status: 'new',
-        travelDate: this.normalizeDateInput(createBookingDto.checkIn),
-        numPeople: createBookingDto.guests,
-        budget: pricing.totalPrice,
-        source: 'web',
-        notes: createBookingDto.note,
-      },
-    });
+      const customer = await tx.customer.upsert({
+        where: { phone: createBookingDto.phone },
+        update: {
+          name: createBookingDto.customerName,
+          email: createBookingDto.email,
+          source: 'web',
+        },
+        create: {
+          name: createBookingDto.customerName,
+          phone: createBookingDto.phone,
+          email: createBookingDto.email,
+          source: 'web',
+        },
+      });
+
+      const created = await tx.booking.create({
+        data: {
+          ...bookingInput,
+          customerId: customer.id,
+          bookingCode,
+          productOptionName: productOption?.name || productOption?.nameVi || productOption?.nameEn,
+          productOptionType: productOption?.optionType,
+          productOptionPrice: productOption?.basePrice,
+          productOptionDurationDays: productOption?.durationDays ?? property?.durationDays,
+          productOptionQuantity: pricing.productOptionQuantity,
+          guests: pricing.guests,
+          adultCount: pricing.adultCount,
+          childCount: pricing.childCount,
+          checkIn: pricing.checkIn,
+          checkOut: pricing.checkOut,
+          totalCost,
+          totalPrice: pricing.totalPrice,
+          profit: Math.max(pricing.totalPrice - totalCost, 0),
+          depositAmount,
+          depositPercent,
+          discountCode: this.normalizeDiscountCode(createBookingDto.discountCode),
+          paymentReference,
+          transferContent,
+          status: BookingStatus.PENDING,
+        },
+        include: this.includeRelations(),
+      });
+
+      await tx.lead.create({
+        data: {
+          customerId: customer.id,
+          propertyId: createBookingDto.propertyId,
+          status: 'new',
+          travelDate: this.normalizeDateInput(createBookingDto.checkIn),
+          numPeople: createBookingDto.guests,
+          budget: pricing.totalPrice,
+          source: 'web',
+          notes: createBookingDto.note,
+        },
+      });
+
+      return created;
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
     await this.notificationService.sendNewBookingNotification(booking);
 
@@ -487,6 +494,88 @@ export class BookingService {
   private isUnitBasedBooking(propertyType?: string, optionType?: string) {
     if (['room', 'cabin', 'vehicle'].includes(optionType || '')) return true;
     return ['hotel', 'homestay', 'cruise', 'transport', 'car-rental'].includes(propertyType || '');
+  }
+
+  private async assertInventoryAvailable(tx: Prisma.TransactionClient, property: any, productOption: any, pricing: any) {
+    if (!productOption || !this.isUnitBasedBooking(property?.type, productOption?.optionType)) {
+      return;
+    }
+
+    const defaultInventory = Number(productOption.inventoryQuantity || 0);
+    if (!defaultInventory) {
+      return;
+    }
+
+    const dates = this.getInventoryDates(pricing.checkIn, pricing.checkOut);
+    if (!dates.length) {
+      return;
+    }
+
+    const [overlappingBookings, overrides] = await Promise.all([
+      tx.booking.findMany({
+        where: {
+          productOptionId: productOption.id,
+          checkIn: { lt: pricing.checkOut },
+          checkOut: { gt: pricing.checkIn },
+          status: { not: BookingStatus.CANCELLED },
+          OR: [
+            { bookingIntent: { in: ['pay_deposit', 'pay_full'] } },
+            { status: { in: [BookingStatus.CONFIRMED, BookingStatus.DEPOSIT, BookingStatus.PAID] } },
+          ],
+        },
+        select: {
+          checkIn: true,
+          checkOut: true,
+          productOptionQuantity: true,
+        },
+      }),
+      tx.productOptionInventory.findMany({
+        where: {
+          optionId: productOption.id,
+          date: { in: dates },
+        },
+      }),
+    ]);
+
+    const overrideByDate = new Map(overrides.map((item) => [this.toDateKey(item.date), item]));
+    const bookedByDate = new Map<string, number>();
+
+    overlappingBookings.forEach((booking) => {
+      this.getInventoryDates(booking.checkIn, booking.checkOut).forEach((date) => {
+        const key = this.toDateKey(date);
+        bookedByDate.set(key, (bookedByDate.get(key) || 0) + Math.max(booking.productOptionQuantity || 1, 1));
+      });
+    });
+
+    const requestedUnits = Math.max(pricing.productOptionQuantity || 1, 1);
+    const soldOutDate = dates.find((date) => {
+      const key = this.toDateKey(date);
+      const override = overrideByDate.get(key);
+      const totalUnits = override ? override.totalUnits : defaultInventory;
+      const availableUnits = override?.closed ? 0 : totalUnits - (bookedByDate.get(key) || 0);
+      return availableUnits < requestedUnits;
+    });
+
+    if (soldOutDate) {
+      throw new BadRequestException(`Selected option is not available on ${this.toDateKey(soldOutDate)}`);
+    }
+  }
+
+  private getInventoryDates(checkIn: Date, checkOut: Date) {
+    const dates: Date[] = [];
+    const cursor = new Date(Date.UTC(checkIn.getUTCFullYear(), checkIn.getUTCMonth(), checkIn.getUTCDate()));
+    const end = new Date(Date.UTC(checkOut.getUTCFullYear(), checkOut.getUTCMonth(), checkOut.getUTCDate()));
+
+    while (cursor < end) {
+      dates.push(new Date(cursor));
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+
+    return dates;
+  }
+
+  private toDateKey(date: Date) {
+    return date.toISOString().slice(0, 10);
   }
 
   private validateStatusTransition(currentStatus: string, newStatus: string) {

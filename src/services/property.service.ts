@@ -39,6 +39,7 @@ export interface ProductOption {
   maxGuests?: number;
   maxAdults?: number;
   maxChildren?: number;
+  inventoryQuantity?: number;
   durationDays?: number;
   bedType?: string;
   bedCount?: number;
@@ -102,6 +103,20 @@ export interface Property {
   };
 }
 
+export interface OptionAvailability {
+  available: boolean;
+  limited: boolean;
+  requestedUnits: number;
+  minimumAvailableUnits: number | null;
+  dates: Array<{
+    date: string;
+    totalUnits: number;
+    bookedUnits: number;
+    availableUnits: number;
+    closed: boolean;
+  }>;
+}
+
 export interface CreatePropertyDto {
   name: string;
   nameVi?: string;
@@ -150,6 +165,11 @@ export const propertyService = {
   async getById(id: string) {
     const response = await api.get(`/properties/${id}`);
     return response.data as Property;
+  },
+
+  async getAvailability(id: string, params: { productOptionId?: string; checkIn?: string; checkOut?: string; adults?: number; children?: number }) {
+    const response = await api.get(`/properties/${id}/availability`, { params });
+    return response.data as OptionAvailability;
   },
 
   async create(data: CreatePropertyDto) {

@@ -108,6 +108,7 @@ model ProductOption {
   maxGuests   Int?
   maxAdults   Int?
   maxChildren Int?
+  inventoryQuantity Int?
   durationDays Int?
   bedType     String?
   bedCount    Int?
@@ -123,8 +124,26 @@ model ProductOption {
 
   property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   bookings    Booking[]
+  inventories ProductOptionInventory[]
 
   @@map("product_options")
+}
+
+model ProductOptionInventory {
+  id          String   @id @default(uuid())
+  optionId    String
+  date        DateTime
+  totalUnits  Int
+  closed      Boolean  @default(false)
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  option      ProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([optionId, date])
+  @@index([date])
+  @@map("product_option_inventories")
 }
 
 model ProductCategory {

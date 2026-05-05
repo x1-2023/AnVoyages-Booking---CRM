@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
@@ -110,6 +110,121 @@ export class PropertyService {
     }
 
     return this.parsePropertyJson(property);
+  }
+
+  async getAvailability(id: string, query: {
+    productOptionId?: string;
+    checkIn?: string;
+    checkOut?: string;
+    adults?: number;
+    children?: number;
+  }) {
+    const property = await this.prisma.property.findUnique({
+      where: { id },
+      include: {
+        options: {
+          where: query.productOptionId ? { id: query.productOptionId } : { isActive: true },
+          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+        },
+      },
+    });
+
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const option = query.productOptionId
+      ? property.options.find((item) => item.id === query.productOptionId)
+      : property.options[0];
+
+    if (query.productOptionId && !option) {
+      throw new NotFoundException('Product option not found');
+    }
+
+    if (!option || !query.checkIn || !query.checkOut) {
+      return {
+        available: true,
+        limited: false,
+        requestedUnits: 1,
+        minimumAvailableUnits: null,
+        dates: [],
+      };
+    }
+
+    const checkIn = this.normalizeDateInput(query.checkIn);
+    const checkOut = this.normalizeDateInput(query.checkOut);
+    if (Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime()) || checkOut <= checkIn) {
+      throw new BadRequestException('Invalid availability dates');
+    }
+
+    const requestedUnits = this.getRequestedUnits(property, option, Number(query.adults || 1), Number(query.children || 0));
+    const defaultInventory = Number(option.inventoryQuantity || 0);
+    if (!defaultInventory) {
+      return {
+        available: true,
+        limited: false,
+        requestedUnits,
+        minimumAvailableUnits: null,
+        dates: [],
+      };
+    }
+
+    const dates = this.getInventoryDates(checkIn, checkOut);
+    const [overlappingBookings, overrides] = await Promise.all([
+      this.prisma.booking.findMany({
+        where: {
+          productOptionId: option.id,
+          checkIn: { lt: checkOut },
+          checkOut: { gt: checkIn },
+          status: { not: 'cancelled' },
+          OR: [
+            { bookingIntent: { in: ['pay_deposit', 'pay_full'] } },
+            { status: { in: ['confirmed', 'deposit', 'paid'] } },
+          ],
+        },
+        select: {
+          checkIn: true,
+          checkOut: true,
+          productOptionQuantity: true,
+        },
+      }),
+      this.prisma.productOptionInventory.findMany({
+        where: {
+          optionId: option.id,
+          date: { in: dates },
+        },
+      }),
+    ]);
+
+    const overrideByDate = new Map(overrides.map((item) => [this.toDateKey(item.date), item]));
+    const bookedByDate = new Map<string, number>();
+
+    overlappingBookings.forEach((booking) => {
+      this.getInventoryDates(booking.checkIn, booking.checkOut).forEach((date) => {
+        const key = this.toDateKey(date);
+        bookedByDate.set(key, (bookedByDate.get(key) || 0) + Math.max(booking.productOptionQuantity || 1, 1));
+      });
+    });
+
+    const dateAvailability = dates.map((date) => {
+      const key = this.toDateKey(date);
+      const override = overrideByDate.get(key);
+      const totalUnits = override ? override.totalUnits : defaultInventory;
+      const bookedUnits = bookedByDate.get(key) || 0;
+      const availableUnits = override?.closed ? 0 : Math.max(totalUnits - bookedUnits, 0);
+
+      return { date: key, totalUnits, bookedUnits, availableUnits, closed: override?.closed || false };
+    });
+
+    const minimumAvailableUnits = Math.min(...dateAvailability.map((item) => item.availableUnits));
+
+    return {
+      available: minimumAvailableUnits >= requestedUnits,
+      limited: true,
+      requestedUnits,
+      minimumAvailableUnits,
+      dates: dateAvailability,
+    };
   }
 
   async findCategories(isActive?: boolean) {
@@ -255,6 +370,7 @@ export class PropertyService {
       maxGuests: data.maxGuests === undefined ? undefined : Number(data.maxGuests) || undefined,
       maxAdults: data.maxAdults === undefined ? undefined : Number(data.maxAdults) || undefined,
       maxChildren: data.maxChildren === undefined ? undefined : Number(data.maxChildren) || undefined,
+      inventoryQuantity: data.inventoryQuantity === undefined ? undefined : Number(data.inventoryQuantity) || undefined,
       durationDays: data.durationDays === undefined ? undefined : Number(data.durationDays) || undefined,
       bedCount: data.bedCount === undefined ? undefined : Number(data.bedCount) || undefined,
       areaSqm: data.areaSqm === undefined ? undefined : Number(data.areaSqm) || undefined,
@@ -278,6 +394,52 @@ export class PropertyService {
     } catch {
       return [];
     }
+  }
+
+  private normalizeDateInput(value: string) {
+    return new Date(`${value}T00:00:00.000Z`);
+  }
+
+  private getRequestedUnits(property: any, option: any, adultCount: number, childCount: number) {
+    if (!this.isUnitBasedBooking(property?.type, option?.optionType)) return 1;
+
+    const guests = Math.max(Math.round(adultCount || 1) + Math.round(childCount || 0), 1);
+    const guestCapacity = Math.max(Number(option.maxGuests || property.maxGuests || 1), 1);
+    const adultCapacity = Math.max(Number(option.maxAdults || guestCapacity), 1);
+    const childCapacity = option.maxChildren === null || option.maxChildren === undefined
+      ? guestCapacity
+      : Math.max(Number(option.maxChildren), 0);
+
+    if (childCount > 0 && childCapacity <= 0) return Number.POSITIVE_INFINITY;
+
+    return Math.max(
+      Math.ceil(guests / guestCapacity),
+      Math.ceil(Math.max(adultCount, 1) / adultCapacity),
+      childCount > 0 ? Math.ceil(childCount / childCapacity) : 1,
+      1,
+    );
+  }
+
+  private isUnitBasedBooking(propertyType?: string, optionType?: string) {
+    if (['room', 'cabin', 'vehicle'].includes(optionType || '')) return true;
+    return ['hotel', 'homestay', 'cruise', 'transport', 'car-rental'].includes(propertyType || '');
+  }
+
+  private getInventoryDates(checkIn: Date, checkOut: Date) {
+    const dates: Date[] = [];
+    const cursor = new Date(Date.UTC(checkIn.getUTCFullYear(), checkIn.getUTCMonth(), checkIn.getUTCDate()));
+    const end = new Date(Date.UTC(checkOut.getUTCFullYear(), checkOut.getUTCMonth(), checkOut.getUTCDate()));
+
+    while (cursor < end) {
+      dates.push(new Date(cursor));
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+
+    return dates;
+  }
+
+  private toDateKey(date: Date) {
+    return date.toISOString().slice(0, 10);
   }
 
   private async ensureUniqueCategorySlug(value: string) {

@@ -55,6 +55,25 @@ export class PropertyController {
     return this.propertyService.findOne(id);
   }
 
+  @Get(':id/availability')
+  @ApiOperation({ summary: 'Check property option availability for selected dates' })
+  getAvailability(
+    @Param('id') id: string,
+    @Query('productOptionId') productOptionId?: string,
+    @Query('checkIn') checkIn?: string,
+    @Query('checkOut') checkOut?: string,
+    @Query('adults') adults?: string,
+    @Query('children') children?: string,
+  ) {
+    return this.propertyService.getAvailability(id, {
+      productOptionId,
+      checkIn,
+      checkOut,
+      adults: adults ? Number(adults) : undefined,
+      children: children ? Number(children) : undefined,
+    });
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

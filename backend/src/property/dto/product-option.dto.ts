@@ -75,6 +75,11 @@ export class ProductOptionDto {
   @IsOptional()
   maxChildren?: number;
 
+  @ApiProperty({ required: false, description: 'Total sellable rooms/cabins/vehicles for this option' })
+  @IsInt()
+  @IsOptional()
+  inventoryQuantity?: number;
+
   @ApiProperty({ required: false, description: 'Fixed itinerary duration in days, useful for tour packages' })
   @IsInt()
   @IsOptional()

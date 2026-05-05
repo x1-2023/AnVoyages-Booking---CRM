@@ -49,7 +49,7 @@ import DateRangePicker from '@/components/DateRangePicker';
 import TurnstileWidget from '@/components/TurnstileWidget';
 import BackButton from '@/components/BackButton';
 import { bookingService, getSepayCheckoutStorageKey } from '@/services/booking.service';
-import { propertyService, Property, ProductOption } from '@/services/property.service';
+import { propertyService, Property, ProductOption, OptionAvailability } from '@/services/property.service';
 import {
   calculateBookingNights,
   calculateBookingTotal,
@@ -225,6 +225,8 @@ const PropertyDetail = () => {
   const [captchaToken, setCaptchaToken] = useState('');
   const [property, setProperty] = useState<Property | null>(null);
   const [allProperties, setAllProperties] = useState<Property[]>([]);
+  const [availability, setAvailability] = useState<OptionAvailability | null>(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -344,6 +346,36 @@ const PropertyDetail = () => {
       : t('booking.submit');
   const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
+  useEffect(() => {
+    if (!property || !selectedOption?.id || !formData.checkIn || !formData.checkOut) {
+      setAvailability(null);
+      return;
+    }
+
+    let cancelled = false;
+    setAvailabilityLoading(true);
+    propertyService.getAvailability(property.id, {
+      productOptionId: selectedOption.id,
+      checkIn: formData.checkIn,
+      checkOut: formData.checkOut,
+      adults: formData.adultCount,
+      children: formData.childCount,
+    })
+      .then((result) => {
+        if (!cancelled) setAvailability(result);
+      })
+      .catch(() => {
+        if (!cancelled) setAvailability(null);
+      })
+      .finally(() => {
+        if (!cancelled) setAvailabilityLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.adultCount, formData.checkIn, formData.checkOut, formData.childCount, property, selectedOption?.id]);
+
   const scrollToBooking = (intent?: 'consultation' | 'pay_deposit') => {
     if (intent) {
       setFormData((prev) => ({ ...prev, bookingIntent: intent }));
@@ -400,6 +432,15 @@ const PropertyDetail = () => {
       toast({
         title: t('common.error'),
         description: t('booking.invalid_dates'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (availability?.limited && !availability.available) {
+      toast({
+        title: t('common.error'),
+        description: t('booking.inventory_unavailable'),
         variant: 'destructive',
       });
       return;
@@ -982,6 +1023,23 @@ const PropertyDetail = () => {
                           ? ` · ${t('booking.auto_split_summary', { count: selectedOptionQuantity, unit: selectedUnitLabel })}`
                           : ''}
                       </p>
+                      {availabilityLoading && (
+                        <p className="mt-1.5 text-xs text-muted-foreground">{t('booking.inventory_checking')}</p>
+                      )}
+                      {availability?.limited && (
+                        <div className={`mt-2 rounded-lg border px-3 py-2 text-xs ${
+                          availability.available
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                            : 'border-destructive/30 bg-destructive/5 text-destructive'
+                        }`}>
+                          {availability.available
+                            ? t('booking.inventory_available', {
+                              count: availability.minimumAvailableUnits,
+                              unit: selectedUnitLabel,
+                            })
+                            : t('booking.inventory_unavailable')}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -1106,7 +1164,13 @@ const PropertyDetail = () => {
                       />
                     )}
 
-                    <Button type="submit" variant="hero" size="lg" className="w-full" disabled={saving || Boolean(turnstileSiteKey && !captchaToken)}>
+                    <Button
+                      type="submit"
+                      variant="hero"
+                      size="lg"
+                      className="w-full"
+                      disabled={saving || Boolean(turnstileSiteKey && !captchaToken) || Boolean(availability?.limited && !availability.available)}
+                    >
                       {saving ? t('booking.submitting') : primaryCtaLabel}
                     </Button>
 
