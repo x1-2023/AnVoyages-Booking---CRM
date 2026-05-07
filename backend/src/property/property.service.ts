@@ -506,11 +506,12 @@ export class PropertyService {
       amenities: this.parseJsonArray(option.amenities),
       amenitiesVi: this.parseJsonArray(option.amenitiesVi),
       amenitiesEn: this.parseJsonArray(option.amenitiesEn),
+      pricingRules: this.parseJsonArray(option.pricingRules),
     };
   }
 
   private toOptionPrismaData(option: any) {
-    const { id: _id, images, amenities, amenitiesVi, amenitiesEn, ...data } = option;
+    const { id: _id, images, amenities, amenitiesVi, amenitiesEn, pricingRules, ...data } = option;
     return {
       ...data,
       optionType: data.optionType || 'package',
@@ -523,6 +524,8 @@ export class PropertyService {
       maxGuests: data.maxGuests === undefined ? undefined : Number(data.maxGuests) || undefined,
       maxAdults: data.maxAdults === undefined ? undefined : Number(data.maxAdults) || undefined,
       maxChildren: data.maxChildren === undefined ? undefined : Number(data.maxChildren) || undefined,
+      includedGuests: data.includedGuests === undefined ? undefined : Number(data.includedGuests) || undefined,
+      extraGuestFee: data.extraGuestFee === undefined ? undefined : Number(data.extraGuestFee) || undefined,
       inventoryQuantity: data.inventoryQuantity === undefined ? undefined : Number(data.inventoryQuantity) || undefined,
       durationDays: data.durationDays === undefined ? undefined : Number(data.durationDays) || undefined,
       bedCount: data.bedCount === undefined ? undefined : Number(data.bedCount) || undefined,
@@ -533,6 +536,7 @@ export class PropertyService {
       amenities: amenities === undefined ? undefined : JSON.stringify(amenities),
       amenitiesVi: amenitiesVi === undefined ? undefined : JSON.stringify(amenitiesVi),
       amenitiesEn: amenitiesEn === undefined ? undefined : JSON.stringify(amenitiesEn),
+      pricingRules: pricingRules === undefined ? undefined : JSON.stringify(pricingRules),
     };
   }
 

@@ -1,7 +1,11 @@
 import {
   BadRequestException,
   Controller,
+  Get,
+  NotFoundException,
+  Param,
   Post,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -11,6 +15,7 @@ import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { readFile, unlink } from 'fs/promises';
+import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { MediaService } from './media.service';
 
@@ -49,6 +54,42 @@ async function assertSafeImage(file: UploadedImageFile) {
 @Controller('media')
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
+
+  @Get('files/:folder/:filename')
+  sendPublicFile(
+    @Param('folder') folder: string,
+    @Param('filename') filename: string,
+    @Res() response: Response,
+  ) {
+    if (!['settings', 'blog', 'products'].includes(folder) || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+      throw new NotFoundException('File not found');
+    }
+
+    return response.sendFile(join(process.cwd(), 'uploads', folder, filename), (error) => {
+      if (error && !response.headersSent) {
+        response.status(404).send('File not found');
+      }
+    });
+  }
+
+  @Get('files/:folder/:namespace/:filename')
+  sendPublicNestedFile(
+    @Param('folder') folder: string,
+    @Param('namespace') namespace: string,
+    @Param('filename') filename: string,
+    @Res() response: Response,
+  ) {
+    const safeSegment = (value: string) => /^[a-zA-Z0-9._-]+$/.test(value);
+    if (!['products'].includes(folder) || !safeSegment(namespace) || !safeSegment(filename)) {
+      throw new NotFoundException('File not found');
+    }
+
+    return response.sendFile(join(process.cwd(), 'uploads', folder, namespace, filename), (error) => {
+      if (error && !response.headersSent) {
+        response.status(404).send('File not found');
+      }
+    });
+  }
 
   @Post('hero-image')
   @UseGuards(JwtAuthGuard)

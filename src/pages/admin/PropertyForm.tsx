@@ -29,9 +29,13 @@ const createEmptyPricingRule = (): PricingRule => ({
   name: '',
   startDate: '',
   endDate: '',
+  months: [],
+  weekdays: [],
+  price: 0,
   adultPrice: 0,
   childPrice: 0,
   extraFee: 0,
+  minNights: 0,
 });
 
 const createEmptyOption = (type = 'package'): ProductOption => ({
@@ -46,6 +50,8 @@ const createEmptyOption = (type = 'package'): ProductOption => ({
   maxGuests: 1,
   maxAdults: 2,
   maxChildren: 0,
+  includedGuests: 2,
+  extraGuestFee: 0,
   inventoryQuantity: 1,
   durationDays: undefined,
   bedType: '',
@@ -55,6 +61,7 @@ const createEmptyOption = (type = 'package'): ProductOption => ({
   amenities: [],
   amenitiesVi: [],
   amenitiesEn: [],
+  pricingRules: [],
   isActive: true,
   sortOrder: 0,
 });
@@ -65,11 +72,20 @@ function cleanPricingRules(rules?: PricingRule[]) {
       name: rule.name?.trim() || undefined,
       startDate: rule.startDate || undefined,
       endDate: rule.endDate || undefined,
+      months: Array.isArray(rule.months) ? rule.months.map(Number).filter(Boolean) : undefined,
+      weekdays: Array.isArray(rule.weekdays) ? rule.weekdays.map(Number).filter((value) => value >= 0 && value <= 6) : undefined,
+      holidayDates: Array.isArray(rule.holidayDates) ? rule.holidayDates.filter(Boolean) : undefined,
+      price: Number(rule.price || rule.basePrice) || undefined,
       adultPrice: Number(rule.adultPrice) || undefined,
       childPrice: Number(rule.childPrice) || undefined,
       extraFee: Number(rule.extraFee) || 0,
+      minNights: Number(rule.minNights) || undefined,
+      requiredMealName: rule.requiredMealName?.trim() || undefined,
+      requiredMealPrice: Number(rule.requiredMealPrice) || undefined,
+      requiredMealChargeType: rule.requiredMealChargeType || undefined,
+      priority: Number(rule.priority) || undefined,
     }))
-    .filter((rule) => rule.name || rule.startDate || rule.endDate || rule.adultPrice || rule.childPrice || rule.extraFee);
+    .filter((rule) => rule.name || rule.startDate || rule.endDate || rule.months?.length || rule.weekdays?.length || rule.holidayDates?.length || rule.price || rule.adultPrice || rule.childPrice || rule.extraFee || rule.minNights || rule.requiredMealPrice);
 }
 
 function cleanProductOptions(options?: ProductOption[]) {
@@ -85,11 +101,14 @@ function cleanProductOptions(options?: ProductOption[]) {
       maxGuests: Number(option.maxGuests) || undefined,
       maxAdults: Number(option.maxAdults) || undefined,
       maxChildren: Number(option.maxChildren) || undefined,
+      includedGuests: Number(option.includedGuests) || undefined,
+      extraGuestFee: Number(option.extraGuestFee) || undefined,
       inventoryQuantity: Number(option.inventoryQuantity) || undefined,
       durationDays: Number(option.durationDays) || undefined,
       areaSqm: Number(option.areaSqm) || undefined,
       bedCount: Number(option.bedCount) || undefined,
       sortOrder: Number(option.sortOrder) || index,
+      pricingRules: cleanPricingRules(option.pricingRules),
       isActive: option.isActive ?? true,
     }))
     .filter((option) => option.name && option.basePrice > 0);
@@ -342,6 +361,17 @@ export default function PropertyForm() {
         optionIndex === index ? { ...option, ...patch } : option
       )),
     }));
+  };
+
+  const updateOptionPricingRulesJson = (index: number, value: string) => {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        updateProductOption(index, { pricingRules: parsed });
+      }
+    } catch {
+      // Keep the last valid rules while the admin is editing an incomplete JSON block.
+    }
   };
 
   const addProductOption = () => {
@@ -710,7 +740,7 @@ export default function PropertyForm() {
                           </div>
                         </div>
 
-                        <div className="grid gap-3 md:grid-cols-6">
+                        <div className="grid gap-3 md:grid-cols-8">
                           <div className="space-y-2">
                             <Label htmlFor={`option-${index}-base-price`}>Giá bán</Label>
                             <Input
@@ -844,6 +874,20 @@ export default function PropertyForm() {
                               placeholder="VD: 28"
                             />
                           </div>
+                        </div>
+
+                        <div className="space-y-2 rounded-lg border border-dashed bg-muted/20 p-3">
+                          <Label htmlFor={`option-${index}-pricing-rules`}>Quy tắc giá riêng cho hạng này (JSON)</Label>
+                          <Textarea
+                            id={`option-${index}-pricing-rules`}
+                            defaultValue={JSON.stringify(option.pricingRules || [], null, 2)}
+                            onBlur={(event) => updateOptionPricingRulesJson(index, event.target.value)}
+                            placeholder={'[\n  { "name": "Đỉnh điểm T6-T7", "months": [5,6,7,8], "weekdays": [5,6], "price": 1850000, "minNights": 2, "priority": 20 }\n]'}
+                            className="min-h-28 font-mono text-xs"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Dùng months 1-12, weekdays 0=CN đến 6=T7, holidayDates dạng YYYY-MM-DD, price là giá theo đêm mỗi phòng/cabin.
+                          </p>
                         </div>
 
                         <div className="grid gap-3 md:grid-cols-2">

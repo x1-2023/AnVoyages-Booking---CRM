@@ -1,5 +1,5 @@
 import type { Location } from '@/services/location.service';
-import type { Property } from '@/services/property.service';
+import type { PricingRule, Property } from '@/services/property.service';
 import {
   getLocalizedLocationDescription,
   getLocalizedLocationName,
@@ -154,6 +154,133 @@ export function calculateBookingNights(checkIn: string, checkOut: string) {
 
 export function calculateBookingTotal(basePrice: number, checkIn: string, checkOut: string) {
   return calculateBookingNights(checkIn, checkOut) * basePrice;
+}
+
+function parseBookingDate(value: string) {
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+function toDateKey(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function getBookingDates(checkIn: string, checkOut: string) {
+  const start = parseBookingDate(checkIn);
+  const end = parseBookingDate(checkOut);
+  const dates: Date[] = [];
+  if (!start || !end || end <= start) return dates;
+
+  const cursor = new Date(start);
+  while (cursor < end) {
+    dates.push(new Date(cursor));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  return dates;
+}
+
+function getRuleSpecificity(rule: PricingRule) {
+  return [
+    rule.holidayDates?.length ? 8 : 0,
+    rule.startDate || rule.endDate ? 4 : 0,
+    rule.weekdays?.length ? 2 : 0,
+    rule.months?.length ? 1 : 0,
+  ].reduce((sum, value) => sum + value, 0);
+}
+
+function matchesPricingRule(date: Date, rule: PricingRule) {
+  const dateKey = toDateKey(date);
+  const month = date.getUTCMonth() + 1;
+  const weekday = date.getUTCDay();
+  const hasHolidayConstraint = Array.isArray(rule.holidayDates) && rule.holidayDates.length > 0;
+  const hasMonthConstraint = Array.isArray(rule.months) && rule.months.length > 0;
+  const hasWeekdayConstraint = Array.isArray(rule.weekdays) && rule.weekdays.length > 0;
+  const hasDateConstraint = Boolean(rule.startDate || rule.endDate);
+
+  if (hasHolidayConstraint && rule.holidayDates?.includes(dateKey)) return true;
+  if (hasHolidayConstraint && !hasMonthConstraint && !hasWeekdayConstraint && !hasDateConstraint) return false;
+  if (hasMonthConstraint && !rule.months?.map(Number).includes(month)) return false;
+  if (hasWeekdayConstraint && !rule.weekdays?.map(Number).includes(weekday)) return false;
+
+  if (rule.startDate || rule.endDate) {
+    const start = rule.startDate ? parseBookingDate(rule.startDate) : null;
+    const end = rule.endDate ? parseBookingDate(rule.endDate) : null;
+    if (start && date < start) return false;
+    if (end && date > end) return false;
+  }
+
+  return Boolean(
+    rule.price || rule.basePrice || rule.adultPrice || rule.childPrice || rule.extraFee ||
+    rule.requiredMealPrice || rule.minNights || hasMonthConstraint || hasWeekdayConstraint || hasDateConstraint,
+  );
+}
+
+export function getBestPricingRule(date: Date, rules: PricingRule[] = []) {
+  return [...rules]
+    .filter((rule) => matchesPricingRule(date, rule))
+    .sort((a, b) => {
+      const priorityDiff = Number(b.priority || 0) - Number(a.priority || 0);
+      if (priorityDiff !== 0) return priorityDiff;
+      return getRuleSpecificity(b) - getRuleSpecificity(a);
+    })[0];
+}
+
+export function calculateDynamicBookingTotal(input: {
+  basePrice: number;
+  adultPrice?: number;
+  childPrice?: number;
+  adultCount: number;
+  childCount: number;
+  includedGuests?: number;
+  extraGuestFee?: number;
+  quantity: number;
+  checkIn: string;
+  checkOut: string;
+  rules?: PricingRule[];
+  fixedDuration?: boolean;
+}) {
+  const dates = input.fixedDuration
+    ? (parseBookingDate(input.checkIn) ? [parseBookingDate(input.checkIn) as Date] : [])
+    : getBookingDates(input.checkIn, input.checkOut);
+  const hasPerGuestPricing = Boolean(input.adultPrice || input.childPrice);
+  const quantity = Math.max(input.quantity || 1, 1);
+
+  if (!dates.length) {
+    const guests = input.adultCount + input.childCount;
+    const includedGuests = input.includedGuests ? Math.max(Number(input.includedGuests), 0) * quantity : guests;
+    const extraGuestTotal = Math.max(guests - includedGuests, 0) * Number(input.extraGuestFee || 0);
+    const subtotal = hasPerGuestPricing
+      ? (input.adultCount * Number(input.adultPrice || input.basePrice)) + (input.childCount * Number(input.childPrice || input.adultPrice || input.basePrice))
+      : input.basePrice * quantity;
+    return subtotal + extraGuestTotal;
+  }
+
+  return Math.round(dates.reduce((sum, date) => {
+    const rule = getBestPricingRule(date, input.rules);
+    const basePrice = Number(rule?.price ?? rule?.basePrice ?? input.basePrice);
+    const adultPrice = Number(rule?.adultPrice ?? input.adultPrice ?? basePrice);
+    const childPrice = Number(rule?.childPrice ?? input.childPrice ?? adultPrice);
+    const subtotal = hasPerGuestPricing || rule?.adultPrice || rule?.childPrice
+      ? (input.adultCount * adultPrice) + (input.childCount * childPrice)
+      : basePrice * quantity;
+    const guests = input.adultCount + input.childCount;
+    const includedGuests = input.includedGuests ? Math.max(Number(input.includedGuests), 0) * quantity : guests;
+    const extraGuestTotal = Math.max(guests - includedGuests, 0) * Number(input.extraGuestFee || 0);
+    const extraFee = Number(rule?.extraFee || 0) * quantity;
+    const mealPrice = Number(rule?.requiredMealPrice || 0);
+    const mealChargeType = rule?.requiredMealChargeType || 'guest';
+    const mealTotal = mealPrice > 0
+      ? mealChargeType === 'room'
+        ? mealPrice * quantity
+        : mealChargeType === 'adult'
+          ? mealPrice * input.adultCount
+          : mealPrice * (input.adultCount + input.childCount)
+      : 0;
+
+    return sum + subtotal + extraGuestTotal + extraFee + mealTotal;
+  }, 0));
 }
 
 export function isValidBookingDates(checkIn: string, checkOut: string) {

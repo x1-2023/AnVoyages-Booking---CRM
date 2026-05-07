@@ -28,6 +28,25 @@ interface SepaySettings {
   ipnSecretKey: string;
 }
 
+interface BookingPricingRule {
+  name?: string;
+  startDate?: string;
+  endDate?: string;
+  months?: number[];
+  weekdays?: number[];
+  holidayDates?: string[];
+  price?: number;
+  basePrice?: number;
+  adultPrice?: number;
+  childPrice?: number;
+  extraFee?: number;
+  minNights?: number;
+  requiredMealName?: string;
+  requiredMealPrice?: number;
+  requiredMealChargeType?: 'guest' | 'adult' | 'room';
+  priority?: number;
+}
+
 @Injectable()
 export class BookingService {
   constructor(
@@ -392,21 +411,36 @@ export class BookingService {
 
     const durationDays = productOption?.durationDays ?? property.durationDays ?? 0;
     const fixedDuration = Boolean((property.type === 'tour' || property.type === 'cruise') && durationDays > 0);
-    const basePrice = productOption?.basePrice ?? property.basePrice;
+    const basePrice = Number(productOption?.basePrice ?? property.basePrice);
     const adultPrice = productOption?.adultPrice ?? property.adultPrice;
     const childPrice = productOption?.childPrice ?? property.childPrice;
+    const pricingRules = [
+      ...this.parsePricingRules(property.pricingRules),
+      ...this.parsePricingRules(productOption?.pricingRules),
+    ];
     const hasPerGuestPricing = Boolean(adultPrice || childPrice);
-    const unitPrice = hasPerGuestPricing
-      ? (adultCount * Number(adultPrice || basePrice)) + (childCount * Number(childPrice || adultPrice || basePrice))
-      : basePrice * capacity.productOptionQuantity;
 
-    if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
+    if (!Number.isFinite(basePrice) || basePrice <= 0) {
       throw new BadRequestException('Product price is not configured');
     }
 
     if (fixedDuration) {
       const checkOut = new Date(checkIn);
       checkOut.setUTCDate(checkOut.getUTCDate() + Math.max(durationDays - 1, 1));
+      const departurePrice = this.resolveDailyPrice({
+        date: checkIn,
+        basePrice,
+        adultPrice,
+        childPrice,
+        adultCount,
+        childCount,
+        guests,
+        includedGuests: productOption?.includedGuests,
+        extraGuestFee: productOption?.extraGuestFee,
+        quantity: capacity.productOptionQuantity,
+        rules: pricingRules,
+        hasPerGuestPricing,
+      });
 
       return {
         checkIn,
@@ -417,7 +451,7 @@ export class BookingService {
         productOptionQuantity: capacity.productOptionQuantity,
         nights: Math.max(durationDays - 1, 1),
         fixedDuration,
-        totalPrice: Math.round(unitPrice),
+        totalPrice: Math.round(departurePrice),
       };
     }
 
@@ -426,6 +460,23 @@ export class BookingService {
     }
 
     const nights = Math.ceil((requestedCheckOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    this.assertMinimumStay(pricingRules, checkIn, requestedCheckOut, nights);
+    const totalPrice = this.getInventoryDates(checkIn, requestedCheckOut).reduce((sum, date) => {
+      return sum + this.resolveDailyPrice({
+        date,
+        basePrice,
+        adultPrice,
+        childPrice,
+        adultCount,
+        childCount,
+        guests,
+        includedGuests: productOption?.includedGuests,
+        extraGuestFee: productOption?.extraGuestFee,
+        quantity: capacity.productOptionQuantity,
+        rules: pricingRules,
+        hasPerGuestPricing,
+      });
+    }, 0);
 
     return {
       checkIn,
@@ -436,8 +487,116 @@ export class BookingService {
       productOptionQuantity: capacity.productOptionQuantity,
       nights,
       fixedDuration,
-      totalPrice: Math.round(unitPrice * nights),
+      totalPrice: Math.round(totalPrice),
     };
+  }
+
+  private resolveDailyPrice(input: {
+    date: Date;
+    basePrice: number;
+    adultPrice?: number | null;
+    childPrice?: number | null;
+    adultCount: number;
+    childCount: number;
+    guests: number;
+    includedGuests?: number | null;
+    extraGuestFee?: number | null;
+    quantity: number;
+    rules: BookingPricingRule[];
+    hasPerGuestPricing: boolean;
+  }) {
+    const rule = this.findBestPricingRule(input.date, input.rules);
+    const basePrice = Number(rule?.price ?? rule?.basePrice ?? input.basePrice);
+    const adultPrice = Number(rule?.adultPrice ?? input.adultPrice ?? basePrice);
+    const childPrice = Number(rule?.childPrice ?? input.childPrice ?? adultPrice);
+    const quantity = Math.max(input.quantity || 1, 1);
+    const subtotal = input.hasPerGuestPricing || rule?.adultPrice || rule?.childPrice
+      ? (input.adultCount * adultPrice) + (input.childCount * childPrice)
+      : basePrice * quantity;
+    const includedGuests = input.includedGuests ? Math.max(Number(input.includedGuests), 0) * quantity : input.guests;
+    const extraGuestTotal = Math.max(input.guests - includedGuests, 0) * Number(input.extraGuestFee || 0);
+    const extraFee = Number(rule?.extraFee || 0) * quantity;
+    const mealPrice = Number(rule?.requiredMealPrice || 0);
+    const mealChargeType = rule?.requiredMealChargeType || 'guest';
+    const mealTotal = mealPrice > 0
+      ? mealChargeType === 'room'
+        ? mealPrice * quantity
+        : mealChargeType === 'adult'
+          ? mealPrice * input.adultCount
+          : mealPrice * (input.adultCount + input.childCount)
+      : 0;
+
+    return subtotal + extraGuestTotal + extraFee + mealTotal;
+  }
+
+  private assertMinimumStay(rules: BookingPricingRule[], checkIn: Date, checkOut: Date, nights: number) {
+    const matchedRules = this.getInventoryDates(checkIn, checkOut)
+      .map((date) => this.findBestPricingRule(date, rules))
+      .filter(Boolean) as BookingPricingRule[];
+    const minNights = Math.max(0, ...matchedRules.map((rule) => Number(rule.minNights || 0)));
+
+    if (minNights > 0 && nights < minNights) {
+      throw new BadRequestException(`Selected dates require at least ${minNights} nights`);
+    }
+  }
+
+  private findBestPricingRule(date: Date, rules: BookingPricingRule[]) {
+    const matched = rules.filter((rule) => this.matchesPricingRule(date, rule));
+    matched.sort((a, b) => {
+      const priorityDiff = Number(b.priority || 0) - Number(a.priority || 0);
+      if (priorityDiff !== 0) return priorityDiff;
+      return this.getRuleSpecificity(b) - this.getRuleSpecificity(a);
+    });
+
+    return matched[0];
+  }
+
+  private matchesPricingRule(date: Date, rule: BookingPricingRule) {
+    const dateKey = this.toDateKey(date);
+    const month = date.getUTCMonth() + 1;
+    const weekday = date.getUTCDay();
+    const hasHolidayConstraint = Array.isArray(rule.holidayDates) && rule.holidayDates.length > 0;
+    const hasMonthConstraint = Array.isArray(rule.months) && rule.months.length > 0;
+    const hasWeekdayConstraint = Array.isArray(rule.weekdays) && rule.weekdays.length > 0;
+    const hasDateConstraint = Boolean(rule.startDate || rule.endDate);
+
+    if (hasHolidayConstraint && rule.holidayDates?.includes(dateKey)) return true;
+    if (hasHolidayConstraint && !hasMonthConstraint && !hasWeekdayConstraint && !hasDateConstraint) return false;
+    if (hasMonthConstraint && !rule.months?.map(Number).includes(month)) return false;
+    if (hasWeekdayConstraint && !rule.weekdays?.map(Number).includes(weekday)) return false;
+
+    if (rule.startDate || rule.endDate) {
+      const start = rule.startDate ? this.normalizeDateInput(rule.startDate) : undefined;
+      const end = rule.endDate ? this.normalizeDateInput(rule.endDate) : undefined;
+      if (start && date < start) return false;
+      if (end && date > end) return false;
+    }
+
+    return Boolean(
+      rule.price || rule.basePrice || rule.adultPrice || rule.childPrice || rule.extraFee ||
+      rule.requiredMealPrice || rule.minNights || hasMonthConstraint || hasWeekdayConstraint || hasDateConstraint,
+    );
+  }
+
+  private getRuleSpecificity(rule: BookingPricingRule) {
+    return [
+      rule.holidayDates?.length ? 8 : 0,
+      rule.startDate || rule.endDate ? 4 : 0,
+      rule.weekdays?.length ? 2 : 0,
+      rule.months?.length ? 1 : 0,
+    ].reduce((sum, value) => sum + value, 0);
+  }
+
+  private parsePricingRules(value?: string | BookingPricingRule[] | null) {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   }
 
   private resolveCapacity(

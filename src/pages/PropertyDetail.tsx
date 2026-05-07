@@ -52,7 +52,7 @@ import { bookingService, getSepayCheckoutStorageKey } from '@/services/booking.s
 import { propertyService, Property, ProductOption, OptionAvailability } from '@/services/property.service';
 import {
   calculateBookingNights,
-  calculateBookingTotal,
+  calculateDynamicBookingTotal,
   getPropertyBackLink,
   getPropertyDetailData,
   getRelatedProperties,
@@ -298,6 +298,17 @@ const PropertyDetail = () => {
     ? (formData.adultCount * Number(selectedAdultPrice || selectedBasePrice))
       + (formData.childCount * Number(selectedChildPrice || selectedAdultPrice || selectedBasePrice))
     : selectedBasePrice * selectedOptionQuantity;
+  const selectedPricingRules = useMemo(
+    () => [
+      ...(property?.pricingRules || []),
+      ...(selectedOption?.pricingRules || []),
+    ],
+    [property?.pricingRules, selectedOption?.pricingRules],
+  );
+  const displayImages = useMemo(
+    () => (selectedOption?.images?.length ? selectedOption.images : detail?.images || []),
+    [detail?.images, selectedOption?.images],
+  );
   const selectedPerUnitMaxGuests = selectedOption?.maxGuests || property?.maxGuests || 1;
   const selectedMaxGuests = isUnitBasedOption(selectedOption, property?.type)
     ? Math.max(selectedPerUnitMaxGuests * 8, selectedPerUnitMaxGuests)
@@ -320,9 +331,22 @@ const PropertyDetail = () => {
   const totalPrice = useMemo(
     () => {
       if (!property) return 0;
-      return shouldUseFixedStartDate ? selectedUnitPrice : calculateBookingTotal(selectedUnitPrice, formData.checkIn, formData.checkOut);
+      return calculateDynamicBookingTotal({
+        basePrice: selectedBasePrice,
+        adultPrice: selectedAdultPrice,
+        childPrice: selectedChildPrice,
+        adultCount: formData.adultCount,
+        childCount: formData.childCount,
+        includedGuests: selectedOption?.includedGuests,
+        extraGuestFee: selectedOption?.extraGuestFee,
+        quantity: selectedOptionQuantity,
+        checkIn: formData.checkIn,
+        checkOut: formData.checkOut,
+        rules: selectedPricingRules,
+        fixedDuration: shouldUseFixedStartDate,
+      });
     },
-    [formData.checkIn, formData.checkOut, shouldUseFixedStartDate, property, selectedUnitPrice],
+    [formData.adultCount, formData.checkIn, formData.checkOut, formData.childCount, property, selectedAdultPrice, selectedBasePrice, selectedChildPrice, selectedOption?.extraGuestFee, selectedOption?.includedGuests, selectedOptionQuantity, selectedPricingRules, shouldUseFixedStartDate],
   );
   const totalNights = useMemo(
     () => (shouldUseFixedStartDate ? Math.max(fixedDurationDays - 1, 0) : calculateBookingNights(formData.checkIn, formData.checkOut)),
@@ -375,6 +399,10 @@ const PropertyDetail = () => {
       cancelled = true;
     };
   }, [formData.adultCount, formData.checkIn, formData.checkOut, formData.childCount, property, selectedOption?.id]);
+
+  useEffect(() => {
+    setCurrentImage(0);
+  }, [selectedOption?.id]);
 
   const scrollToBooking = (intent?: 'consultation' | 'pay_deposit') => {
     if (intent) {
@@ -555,13 +583,13 @@ const PropertyDetail = () => {
   };
 
   const nextImage = () => {
-    if (!detail) return;
-    setCurrentImage((prev) => (prev + 1) % detail.images.length);
+    if (!displayImages.length) return;
+    setCurrentImage((prev) => (prev + 1) % displayImages.length);
   };
 
   const prevImage = () => {
-    if (!detail) return;
-    setCurrentImage((prev) => (prev - 1 + detail.images.length) % detail.images.length);
+    if (!displayImages.length) return;
+    setCurrentImage((prev) => (prev - 1 + displayImages.length) % displayImages.length);
   };
 
   if (loading) {
@@ -600,7 +628,7 @@ const PropertyDetail = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                src={detail.images[currentImage]}
+                src={displayImages[currentImage]}
                 alt={detail.title}
                 className="w-full h-full object-cover"
               />
@@ -621,7 +649,7 @@ const PropertyDetail = () => {
               </button>
 
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                {detail.images.map((_, index) => (
+                {displayImages.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImage(index)}
@@ -642,13 +670,13 @@ const PropertyDetail = () => {
               </div>
 
               <div className="absolute bottom-4 left-4 rounded-full bg-card/90 px-3 py-1.5 text-xs font-semibold shadow-lg backdrop-blur-sm">
-                {t('property.image_counter', { current: currentImage + 1, total: detail.images.length })}
+                {t('property.image_counter', { current: currentImage + 1, total: displayImages.length })}
               </div>
             </div>
 
-            {detail.images.length > 1 && (
+            {displayImages.length > 1 && (
               <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                {detail.images.slice(0, 6).map((image, index) => (
+                {displayImages.slice(0, 6).map((image, index) => (
                   <button
                     key={`${image}-${index}`}
                     type="button"

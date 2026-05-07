@@ -17,9 +17,19 @@ export interface PricingRule {
   name?: string;
   startDate?: string;
   endDate?: string;
+  months?: number[];
+  weekdays?: number[];
+  holidayDates?: string[];
+  price?: number;
+  basePrice?: number;
   adultPrice?: number;
   childPrice?: number;
   extraFee?: number;
+  minNights?: number;
+  requiredMealName?: string;
+  requiredMealPrice?: number;
+  requiredMealChargeType?: 'guest' | 'adult' | 'room';
+  priority?: number;
 }
 
 export interface ProductOption {
@@ -39,6 +49,8 @@ export interface ProductOption {
   maxGuests?: number;
   maxAdults?: number;
   maxChildren?: number;
+  includedGuests?: number;
+  extraGuestFee?: number;
   inventoryQuantity?: number;
   durationDays?: number;
   bedType?: string;
@@ -48,6 +60,7 @@ export interface ProductOption {
   amenities?: string[];
   amenitiesVi?: string[];
   amenitiesEn?: string[];
+  pricingRules?: PricingRule[];
   isActive?: boolean;
   sortOrder?: number;
 }

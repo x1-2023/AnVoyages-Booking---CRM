@@ -75,6 +75,16 @@ export class ProductOptionDto {
   @IsOptional()
   maxChildren?: number;
 
+  @ApiProperty({ required: false, description: 'Guests included in the room/cabin rate before extra guest surcharge' })
+  @IsInt()
+  @IsOptional()
+  includedGuests?: number;
+
+  @ApiProperty({ required: false, description: 'Surcharge per extra guest per night/unit' })
+  @IsNumber()
+  @IsOptional()
+  extraGuestFee?: number;
+
   @ApiProperty({ required: false, description: 'Total sellable rooms/cabins/vehicles for this option' })
   @IsInt()
   @IsOptional()
@@ -119,6 +129,11 @@ export class ProductOptionDto {
   @IsArray()
   @IsOptional()
   amenitiesEn?: string[];
+
+  @ApiProperty({ required: false, type: [Object], description: 'Seasonal/date pricing rules for this option' })
+  @IsArray()
+  @IsOptional()
+  pricingRules?: any[];
 
   @ApiProperty({ required: false, default: true })
   @IsBoolean()

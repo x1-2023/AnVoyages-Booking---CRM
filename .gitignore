@@ -23,6 +23,7 @@ dist-ssr
 *.zip
 *.tsbuildinfo
 backend/uploads/
+CAT BA ECO HOTEL/
 backend/prisma/*.db*
 backend/prisma/seed.d.ts
 backend/prisma/seed.js

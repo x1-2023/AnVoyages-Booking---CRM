@@ -108,6 +108,8 @@ model ProductOption {
   maxGuests   Int?
   maxAdults   Int?
   maxChildren Int?
+  includedGuests Int?
+  extraGuestFee Float?
   inventoryQuantity Int?
   durationDays Int?
   bedType     String?
@@ -117,6 +119,7 @@ model ProductOption {
   amenities   String?
   amenitiesVi String?
   amenitiesEn String?
+  pricingRules String?
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
