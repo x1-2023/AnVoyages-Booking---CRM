@@ -225,14 +225,45 @@ export default function AdminInventory() {
           description="Hãy thêm lựa chọn trong trang sản phẩm và nhập số lượng bán để quản lý tồn kho."
         />
       ) : (
-        <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
+        <>
+        <div className="space-y-3 lg:hidden">
+          {filteredOptions.map((option) => {
+            const day = option.dates[0];
+            if (!day) return null;
+            const key = `${option.id}-${day.date}`;
+            const isSaving = savingKey === key;
+
+            return (
+              <Card key={option.id} className="overflow-hidden">
+                <CardContent className="space-y-4 p-4">
+                  <div className="space-y-2">
+                    <div className="text-sm font-semibold leading-snug">{getOptionName(option)}</div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <Badge variant="secondary">{option.optionType}</Badge>
+                      <span>Mac dinh: {option.defaultUnits || 'khong gioi han'}</span>
+                      {option.maxGuests ? <span>{option.maxGuests} khach/don vi</span> : null}
+                    </div>
+                  </div>
+                  <InventoryDayEditor
+                    day={day}
+                    isSaving={isSaving}
+                    onSave={(patch) => handleSaveDay(option, day, patch)}
+                    onReset={() => handleResetDay(option, day)}
+                  />
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <Card className="hidden overflow-hidden lg:block">
+          <div className="overflow-x-auto pb-2">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="sticky left-0 z-10 min-w-[260px] bg-card">Hạng / lựa chọn</TableHead>
                   {filteredOptions[0]?.dates.map((day) => (
-                    <TableHead key={day.date} className="min-w-[156px] text-center">
+                    <TableHead key={day.date} className="min-w-[196px] text-center">
                       {formatDate(day.date)}
                     </TableHead>
                   ))}
@@ -256,7 +287,7 @@ export default function AdminInventory() {
                       const isSaving = savingKey === key;
                       return (
                         <TableCell key={day.date} className="align-top">
-                          <div className={`space-y-2 rounded-xl border p-3 ${getStockTone(day)}`}>
+                          <div className={`min-w-[172px] space-y-3 rounded-2xl border p-3 ${getStockTone(day)}`}>
                             <div className="flex items-center justify-between gap-2">
                               <span className="text-xs font-semibold">
                                 {day.closed ? 'Đóng bán' : `${day.availableUnits} còn`}
@@ -279,7 +310,7 @@ export default function AdminInventory() {
                                 }
                               }}
                             />
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                               <Button
                                 type="button"
                                 size="sm"
@@ -287,7 +318,7 @@ export default function AdminInventory() {
                                 disabled={isSaving}
                                 onClick={() => handleSaveDay(option, day, { closed: !day.closed })}
                               >
-                                {day.closed ? <Check className="mr-1 h-3 w-3" /> : <Lock className="mr-1 h-3 w-3" />}
+                                {day.closed ? <Check className="mr-1 h-3 w-3 shrink-0" /> : <Lock className="mr-1 h-3 w-3 shrink-0" />}
                                 {day.closed ? 'Mở' : 'Đóng'}
                               </Button>
                               <Button
@@ -297,13 +328,14 @@ export default function AdminInventory() {
                                 disabled={isSaving}
                                 onClick={() => handleSaveDay(option, day, { totalUnits: day.totalUnits })}
                               >
-                                <Save className="mr-1 h-3 w-3" />
+                                <Save className="mr-1 h-3 w-3 shrink-0" />
                                 Lưu
                               </Button>
                               <Button
                                 type="button"
                                 size="sm"
                                 variant="ghost"
+                                className="col-span-2"
                                 disabled={isSaving || !day.isOverride}
                                 onClick={() => handleResetDay(option, day)}
                               >
@@ -320,6 +352,7 @@ export default function AdminInventory() {
             </Table>
           </div>
         </Card>
+        </>
       )}
     </AdminPage>
   );

@@ -191,17 +191,17 @@ export default function DateRangePicker({
       )}
 
       {!isStartOnly && (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {quickRanges.map((preset) => (
             <Button
               key={preset.label}
               type="button"
               variant="outline"
               size="sm"
-              className="h-10 w-full min-w-0 rounded-full border-primary/25 bg-background px-2 text-center text-[11px] font-semibold leading-tight text-primary shadow-sm hover:bg-primary/10 lg:text-xs"
+              className="h-10 min-w-[118px] shrink-0 rounded-full border-primary/25 bg-background px-3 text-center text-[11px] font-semibold leading-tight text-primary shadow-sm hover:bg-primary/10 lg:text-xs"
               onClick={() => onChange(preset.range)}
             >
-              <span className="block w-full whitespace-normal">{preset.label}</span>
+              <span className="block w-full whitespace-nowrap">{preset.label}</span>
             </Button>
           ))}
         </div>
@@ -228,8 +228,8 @@ export default function DateRangePicker({
           <button type="button" className="absolute inset-0 cursor-default bg-black/20" aria-label="Close date picker" onClick={() => setOpen(false)} />
           <div
             className={cn(
-              'fixed flex max-h-[min(86vh,760px)] w-[calc(100vw-24px)] max-w-[780px] flex-col overflow-hidden rounded-[28px] border bg-background p-0 shadow-2xl sm:left-1/2 sm:top-1/2 sm:w-[780px] sm:-translate-x-1/2 sm:-translate-y-1/2',
-              'bottom-2 left-2 right-2 top-[72px] h-auto max-h-none w-auto max-w-none sm:bottom-auto sm:right-auto',
+              'fixed inset-x-3 bottom-3 top-16 flex flex-col overflow-hidden rounded-[28px] border bg-background p-0 shadow-2xl',
+              'sm:inset-auto sm:left-1/2 sm:top-1/2 sm:max-h-[calc(100vh-48px)] sm:w-[min(900px,calc(100vw-48px))] sm:-translate-x-1/2 sm:-translate-y-1/2',
             )}
             role="dialog"
             aria-modal="true"
@@ -265,7 +265,7 @@ export default function DateRangePicker({
               </Button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto bg-background sm:min-h-[500px]">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-background sm:flex-none">
               {mode === 'calendar' || isStartOnly ? (
                 <div className="px-3 py-4 sm:px-6 sm:py-5">
                   {isStartOnly ? (
