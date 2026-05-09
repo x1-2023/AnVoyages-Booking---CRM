@@ -21,7 +21,10 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "ts-node prisma/seed.ts"
+    "prisma:seed": "ts-node prisma/seed.ts",
+    "r2:smoke": "ts-node scripts/r2-smoke-test.ts",
+    "r2:migrate-local": "ts-node scripts/migrate-local-uploads-to-r2.ts",
+    "r2:migrate-local:dry-run": "ts-node scripts/migrate-local-uploads-to-r2.ts --dry-run"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1041.0",

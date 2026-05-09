@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { readFile, unlink } from 'fs/promises';
+import { extname } from 'path';
 
 interface UploadedImageFile {
   path: string;
@@ -39,23 +40,27 @@ export class MediaService {
 
     const bucket = this.requiredConfig('R2_BUCKET');
     const publicBaseUrl = this.requiredConfig('R2_PUBLIC_BASE_URL').replace(/\/+$/, '');
-    const key = `${folder}/${file.filename}`;
+    const key = this.buildObjectKey(folder, file.filename);
     const body = await readFile(file.path);
 
-    await this.getR2Client().send(
-      new PutObjectCommand({
-        Bucket: bucket,
-        Key: key,
-        Body: body,
-        ContentType: file.mimetype,
-        CacheControl: 'public, max-age=31536000, immutable',
-      }),
-    );
-
-    await unlink(file.path).catch(() => undefined);
+    try {
+      await this.getR2Client().send(
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: key,
+          Body: body,
+          ContentType: file.mimetype,
+          CacheControl: 'public, max-age=31536000, immutable',
+        }),
+      );
+    } catch {
+      throw new InternalServerErrorException('Could not upload image to Cloudflare R2');
+    } finally {
+      await unlink(file.path).catch(() => undefined);
+    }
 
     return {
-      url: `${publicBaseUrl}/${key}`,
+      url: this.buildPublicUrl(publicBaseUrl, key),
       filename: file.filename,
       size: file.size,
       mimeType: file.mimetype,
@@ -70,6 +75,7 @@ export class MediaService {
     const accountId = this.requiredConfig('R2_ACCOUNT_ID');
     const accessKeyId = this.requiredConfig('R2_ACCESS_KEY_ID');
     const secretAccessKey = this.requiredConfig('R2_SECRET_ACCESS_KEY');
+    const sessionToken = this.configService.get<string>('R2_SESSION_TOKEN') || undefined;
 
     this.r2Client = new S3Client({
       region: 'auto',
@@ -77,10 +83,38 @@ export class MediaService {
       credentials: {
         accessKeyId,
         secretAccessKey,
+        sessionToken,
       },
     });
 
     return this.r2Client;
+  }
+
+  private buildObjectKey(folder: string, filename: string) {
+    const safeFolder =
+      folder.replace(/[^a-zA-Z0-9/_-]/g, '').replace(/^\/+|\/+$/g, '') || 'uploads';
+    const extension = extname(filename).toLowerCase();
+    const name = filename
+      .replace(extension, '')
+      .replace(/\u0111/g, 'd')
+      .replace(/\u0110/g, 'd')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 120);
+
+    return `${safeFolder}/${name || Date.now()}${extension || '.jpg'}`;
+  }
+
+  private buildPublicUrl(publicBaseUrl: string, key: string) {
+    const encodedKey = key
+      .split('/')
+      .map((segment) => encodeURIComponent(segment))
+      .join('/');
+
+    return `${publicBaseUrl}/${encodedKey}`;
   }
 
   private requiredConfig(key: string) {

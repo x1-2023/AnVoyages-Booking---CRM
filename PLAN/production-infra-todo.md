@@ -55,20 +55,35 @@ Backend env:
 
 ```env
 UPLOAD_DRIVER="r2"
-R2_ACCOUNT_ID="..."
+R2_ACCOUNT_ID="abd30598a3ca63eefde2e93deb6245c7"
 R2_ACCESS_KEY_ID="..."
 R2_SECRET_ACCESS_KEY="..."
+R2_SESSION_TOKEN=""
 R2_BUCKET="anvoyages-media"
-R2_PUBLIC_BASE_URL="https://media.yourdomain.com"
+R2_PUBLIC_BASE_URL="https://pub-cc52d0d156684b5da8c4bb0f163eb065.r2.dev"
+```
+
+Operational commands:
+
+```powershell
+npm --prefix backend run r2:smoke
+npm --prefix backend run r2:migrate-local:dry-run
+npm --prefix backend run r2:migrate-local
 ```
 
 Required from owner:
 
-- R2 account ID.
-- R2 bucket name.
 - R2 access key ID.
 - R2 secret access key.
-- Public base URL, ideally a custom domain on the bucket.
+- Optional later: custom media domain on the bucket, for example `media.0xit.me`.
+
+Activation flow:
+
+1. Create an R2 API token with Object Read & Write access scoped to `anvoyages-media`.
+2. Put `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` in `backend/.env`.
+3. Run `npm --prefix backend run r2:smoke`.
+4. Switch `UPLOAD_DRIVER="r2"` only after the smoke test returns `Public GET: 200 OK`.
+5. Restart backend and upload one image from admin.
 
 ## CRM / ERP connector direction
 
