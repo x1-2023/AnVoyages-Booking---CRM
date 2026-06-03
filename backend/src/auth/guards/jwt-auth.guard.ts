@@ -1,16 +1,11 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private readonly configService: ConfigService) {
-    super();
-  }
-
   canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
-    const serviceToken = this.configService.get<string>('ANVOYAGES_SERVICE_TOKEN');
+    const serviceToken = process.env.ANVOYAGES_SERVICE_TOKEN;
 
     if (serviceToken && this.extractServiceToken(request) === serviceToken) {
       request.user = {
