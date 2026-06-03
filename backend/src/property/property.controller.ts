@@ -5,6 +5,7 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
 import { UpdateOptionInventoryDto } from './dto/update-option-inventory.dto';
+import { UpdateOptionRateDto } from './dto/update-option-rate.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Properties')
@@ -42,6 +43,14 @@ export class PropertyController {
   @ApiOperation({ summary: 'Upsert option inventory override for a date' })
   updateOptionInventory(@Param('optionId') optionId: string, @Body() dto: UpdateOptionInventoryDto) {
     return this.propertyService.updateOptionInventory(optionId, dto);
+  }
+
+  @Patch('options/:optionId/rate')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update room/cabin/package option rate without recreating property options' })
+  updateOptionRate(@Param('optionId') optionId: string, @Body() dto: UpdateOptionRateDto) {
+    return this.propertyService.updateOptionRate(optionId, dto);
   }
 
   @Delete('options/:optionId/inventory')

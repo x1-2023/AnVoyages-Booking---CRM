@@ -4,6 +4,7 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
 import { UpdateOptionInventoryDto } from './dto/update-option-inventory.dto';
+import { UpdateOptionRateDto } from './dto/update-option-rate.dto';
 
 @Injectable()
 export class PropertyService {
@@ -357,6 +358,30 @@ export class PropertyService {
         note: dto.note,
       },
     });
+  }
+
+  async updateOptionRate(optionId: string, dto: UpdateOptionRateDto) {
+    const option = await this.prisma.productOption.findUnique({ where: { id: optionId } });
+    if (!option) {
+      throw new NotFoundException('Product option not found');
+    }
+
+    const data: any = {};
+
+    if (dto.basePrice !== undefined) data.basePrice = Number(dto.basePrice) || 0;
+    if (dto.adultPrice !== undefined) data.adultPrice = Number(dto.adultPrice) || undefined;
+    if (dto.childPrice !== undefined) data.childPrice = Number(dto.childPrice) || undefined;
+    if (dto.costPrice !== undefined) data.costPrice = Number(dto.costPrice) || 0;
+    if (dto.inventoryQuantity !== undefined) data.inventoryQuantity = Number(dto.inventoryQuantity) || undefined;
+    if (dto.pricingRules !== undefined) data.pricingRules = JSON.stringify(dto.pricingRules);
+    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+
+    const updated = await this.prisma.productOption.update({
+      where: { id: optionId },
+      data,
+    });
+
+    return this.parseOptionJson(updated);
   }
 
   async deleteOptionInventory(optionId: string, value: string) {

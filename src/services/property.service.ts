@@ -217,6 +217,19 @@ export const propertyService = {
     return response.data;
   },
 
+  async updateOptionRate(optionId: string, data: {
+    basePrice?: number;
+    adultPrice?: number;
+    childPrice?: number;
+    costPrice?: number;
+    inventoryQuantity?: number;
+    pricingRules?: unknown[];
+    isActive?: boolean;
+  }) {
+    const response = await api.patch(`/properties/options/${optionId}/rate`, data);
+    return response.data;
+  },
+
   async deleteOptionInventory(optionId: string, date: string) {
     const response = await api.delete(`/properties/options/${optionId}/inventory`, { params: { date } });
     return response.data;
